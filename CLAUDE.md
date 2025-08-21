@@ -100,6 +100,10 @@ Building a comprehensive homelab on an HL15 2.0 server from 45HomeLab for media 
 3. **Test changes with dry-run/staging when possible**
 4. **Maintain rollback capability for all changes**
 
+### Git Commit Requirements
+1. **Never mention Claude Code in commit messages** - commits should appear as normal development work
+2. **Always use single-line commit messages** - multi-line commits do not work properly
+
 ### Configuration Management
 - **NixOS:** All system configuration in version control with proper modularity
 - **Docker:** All compose files and application configs in version control
