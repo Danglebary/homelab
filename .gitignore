@@ -1,0 +1,41 @@
+# Nix/NixOS
+result
+result-*
+.direnv/
+
+# Flakes
+# (keeping flake.lock in version control for reproducibility)
+
+# Temporary files
+*~
+*.tmp
+*.temp
+
+# Log files
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local environment files
+.env
+.env.local
+
+# Backup files
+*.backup
+*.bak
+
+# Network testing output (keep directory structure, ignore contents)
+network-testing/*.log
+network-testing/bond0
+
+# Documentation artifacts
+*.pdf

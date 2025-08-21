@@ -1,0 +1,57 @@
+{ config, lib, pkgs, ... }:
+
+{
+  # Set our hostname
+  networking.hostName = "homelab-hl15";
+
+  # Disable NetworkManager in favor of networkd
+  networking.useNetworkd = true;
+  networking.networkmanager.enable = false;
+
+  # Override DHCP settings from hardware-configuration.nix
+  networking.useDHCP = false;
+
+  # Allow TCP port 22 to enable SSH
+  networking.firewall.allowedTCPPorts = [ 22 ];
+
+  # Enable networking
+  systemd.network.enable = true;
+
+  systemd.network.netdevs."10-bond0" = {
+    netdevConfig = {
+      Name = "bond0";
+      Kind = "bond";
+    };
+
+    bondConfig = {
+      Mode = "802.3ad"; # LACP
+      LACPTransmitRate = "fast";
+      TransmitHashPolicy = "layer3+4";
+    };
+  };
+
+  systemd.network.networks = {
+    "10-bond0" = {
+      matchConfig.Name = "bond0";
+      address = [ "192.168.68.100/24" ];
+      gateway = [ "192.168.68.1" ];
+      dns = [ "192.168.68.1" ];
+    };
+
+    "20-eno1np0" = {
+      matchConfig.Name = "eno1np0";
+      networkConfig = {
+        Bond = "bond0";
+        DHCP = "no";
+      };
+    };
+
+    "21-eno2np1" = {
+      matchConfig.Name = "eno2np1";
+      networkConfig = {
+        Bond = "bond0";
+        DHCP = "no";
+      };
+    };
+  };
+}
