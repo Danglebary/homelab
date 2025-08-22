@@ -135,15 +135,6 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 
 ### Monitoring & Management Services
 
-#### Uptime Kuma (Service Monitoring)
-- **Purpose**: Service availability monitoring and alerting
-- **External Access**: Admin only via Cloudflare Zero Trust (monitor.halfblown.dev)
-- **Remote URL**: `monitor.halfblown.dev`
-- **Storage Requirements**:
-  - Config/Database: `/opt/homelab/services/uptime-kuma/` (NVMe)
-- **Network**: Default bridge network
-- **Dependencies**: Monitors all other services
-- **Monitoring**: HTTP endpoints, Docker container health, system resources
 
 #### Alloy (Telemetry Collection)
 - **Purpose**: Unified telemetry collection for logs, metrics, and traces
@@ -179,7 +170,8 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 
 #### Grafana (Unified Observability Dashboard)
 - **Purpose**: Metrics, logs, and trace visualization with unified dashboards
-- **External Access**: Admin only via Cloudflare Zero Trust
+- **External Access**: Admin only via Cloudflare Zero Trust (monitor.halfblown.dev)
+- **Remote URL**: `monitor.halfblown.dev`
 - **Storage Requirements**:
   - Config/Database: `/opt/homelab/services/grafana/` (NVMe)
 - **Network**: Default bridge network
@@ -202,7 +194,8 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 
 #### Immich (Photo Management)
 - **Purpose**: Photo management and sharing (limited family access)
-- **External Access**: Yes via Cloudflare Zero Trust (limited family access)
+- **External Access**: Limited family access via Cloudflare Zero Trust (immich.halfblown.dev)
+- **Remote URL**: `immich.halfblown.dev`
 - **Storage Requirements**:
   - Config/Database: `/opt/homelab/services/immich/` (NVMe)
   - Photo Library: `/mnt/vault/immich/` (ZFS)
@@ -213,7 +206,8 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 
 #### Nextcloud (File Sync)
 - **Purpose**: File synchronization and collaboration
-- **External Access**: Yes via Cloudflare Zero Trust (personal file access)
+- **External Access**: Admin only via Cloudflare Zero Trust (nextcloud.halfblown.dev)
+- **Remote URL**: `nextcloud.halfblown.dev`
 - **Storage Requirements**:
   - Config/Database: `/opt/homelab/services/nextcloud/` (NVMe)
   - File Storage: `/mnt/vault/nextcloud/` (ZFS)
@@ -276,8 +270,10 @@ Final: /mnt/vault/media/{movies|shows|anime}/ (with metadata/thumbnails)
 - **Access Control**: Email-based authentication with monthly re-auth
 - **Service URLs**:
   - `admin.halfblown.dev` → Homepage (admin dashboard)
+  - `monitor.halfblown.dev` → Grafana (admin monitoring and observability)
   - `request.halfblown.dev` → Overseerr (family/friends media requests)
-  - `monitor.halfblown.dev` → Uptime Kuma (admin monitoring)
+  - `immich.halfblown.dev` → Immich (limited family/friends photo access)
+  - `nextcloud.halfblown.dev` → Nextcloud (admin file sync)
   - Additional admin services accessible via Cloudflare Zero Trust
 - **Benefits**: No port forwarding, built-in DDoS protection, simplified SSL management
 
@@ -319,9 +315,9 @@ Final: /mnt/vault/media/{movies|shows|anime}/ (with metadata/thumbnails)
 6. **Pipeline Order**: Deluge → Tdarr → Sonarr/Sonarr-Anime/Radarr → Plex
 
 ### Monitoring Dependencies
-- **Uptime Kuma** monitors all services
 - **Prometheus** collects metrics from all services
-- **Grafana** visualizes Prometheus data
+- **Grafana** visualizes Prometheus and Loki data with unified dashboards
+- **Loki** aggregates logs from all services via Alloy
 - **Homepage** provides status overview of all services
 
 ## Configuration Management

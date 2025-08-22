@@ -193,7 +193,8 @@ deploy-media:
 deploy-monitoring:
     @echo "Deploying monitoring services..."
     git pull
-    cd services/uptime-kuma && docker compose up -d --remove-orphans
+    cd services/alloy && docker compose up -d --remove-orphans
+    cd services/loki && docker compose up -d --remove-orphans
     cd services/prometheus && docker compose up -d --remove-orphans
     cd services/grafana && docker compose up -d --remove-orphans
     cd services/homepage && docker compose up -d --remove-orphans

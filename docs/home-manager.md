@@ -116,7 +116,6 @@ Comprehensive user and group management strategy for the HL15 homelab server usi
 
 - **`prometheus`**: Time-series metrics collection
 - **`grafana`**: Unified observability dashboard  
-- **`uptime-kuma`**: Service availability monitoring
 - **`alloy`**: Unified telemetry collection
 - **`loki`**: Centralized log storage and querying
 
