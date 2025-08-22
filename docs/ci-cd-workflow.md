@@ -7,42 +7,24 @@ Git-based infrastructure-as-code workflow for managing both NixOS system configu
 
 ### Current Structure
 ```
-homelab/                           # Main repository (public)
-├── nixos/                         # NixOS system configurations
-│   ├── configuration.nix          # Main system config
-│   ├── flake.nix                  # Flakes definition
-│   ├── hardware-configuration.nix # Hardware-specific config
-│   ├── network.nix               # Network bonding config
-│   ├── zfs.nix                   # ZFS storage config
-│   ├── localization.nix          # Timezone/locale settings
-│   ├── display.nix               # X11/GNOME config
-│   ├── audio.nix                 # Audio/PipeWire config
-│   ├── ssh.nix                   # SSH daemon config
-│   └── users/                    # User configurations
-│       └── halfblown.nix         # Current user config
-├── services/                     # Docker service configurations
-│   ├── sonarr/
-│   │   ├── compose.yml           # Docker Compose configuration
-│   │   ├── .env.example          # Environment template (public)
-│   │   └── .env                  # Actual secrets (gitignored)
-│   ├── radarr/
-│   │   ├── compose.yml
-│   │   ├── .env.example
-│   │   └── .env                  # Gitignored
-│   ├── plex/
-│   │   ├── compose.yml
-│   │   ├── .env.example
-│   │   └── .env                  # Gitignored
-│   └── [additional services...]/
-├── docs/                         # Planning and documentation
-│   ├── zfs-setup-plan.md
-│   ├── home-manager-integration-plan.md
-│   └── ci-cd-workflow.md         # This document
-├── scripts/                      # Deployment and management scripts
+homelab/
+├── CLAUDE.md
+├── .gitignore
 ├── Justfile                      # Deployment automation
-├── .gitignore                    # Excludes secrets and sensitive files
-├── CLAUDE.md                     # Agent context and project overview
-└── README.md                     # Public project documentation
+├── docs/
+│   └── ... documentation and planning files ...
+├── nixos/
+│   ├── ... NixOS modular system configuration files ...
+│   └── users/
+│       └── ... User account configuration files ...
+└── services/
+    ├── README.template.md
+    └── [service]/
+        ├── README.md
+        ├── compose.yml
+        ├── .env
+        ├── .env.example
+        └── ... additional service-related configs/data ...
 ```
 
 ## Server Setup (One-Time Configuration)
@@ -70,12 +52,14 @@ sudo chmod 700 /opt/homelab/services/**/.env  # Protect actual secrets
 sudo cp /opt/homelab/services/sonarr/shows/.env.example /opt/homelab/services/sonarr/shows/.env
 sudo cp /opt/homelab/services/sonarr/anime/.env.example /opt/homelab/services/sonarr/anime/.env
 sudo cp /opt/homelab/services/radarr/movies/.env.example /opt/homelab/services/radarr/movies/.env
+sudo cp /opt/homelab/services/radarr/anime/.env.example /opt/homelab/services/radarr/anime/.env
 sudo cp /opt/homelab/services/plex/.env.example /opt/homelab/services/plex/.env
 
 # Edit each .env file with actual secrets and configuration
 sudo nano /opt/homelab/services/sonarr/shows/.env
 sudo nano /opt/homelab/services/sonarr/anime/.env
 sudo nano /opt/homelab/services/radarr/movies/.env
+sudo nano /opt/homelab/services/radarr/anime/.env
 sudo nano /opt/homelab/services/plex/.env
 ```
 
@@ -151,9 +135,8 @@ PGID=1000
 TZ=America/Los_Angeles
 
 # Storage Paths (adjust for your ZFS vault structure)
-MEDIA_PATH=/mnt/vault/media/tv
+MEDIA_PATH=/mnt/vault/media/shows
 DOWNLOAD_PATH=/mnt/vault/temp/downloads
-CONFIG_PATH=/mnt/vault/system/docker/homelab/sonarr
 
 # Database Configuration
 DB_PASSWORD=secure_password_here
@@ -202,6 +185,7 @@ deploy-media:
     cd services/sonarr/shows && docker compose up -d --remove-orphans
     cd services/sonarr/anime && docker compose up -d --remove-orphans
     cd services/radarr/movies && docker compose up -d --remove-orphans
+    cd services/radarr/anime && docker compose up -d --remove-orphans
     cd services/overseerr && docker compose up -d --remove-orphans
     cd services/tdarr && docker compose up -d --remove-orphans
 
@@ -242,6 +226,11 @@ stop-sonarr INSTANCE:
     @echo "Stopping Sonarr {{INSTANCE}} instance"
     cd services/sonarr/{{INSTANCE}} && docker compose down
 
+# Stop specific Radarr instance
+stop-radarr INSTANCE:
+    @echo "Stopping Radarr {{INSTANCE}} instance"
+    cd services/radarr/{{INSTANCE}} && docker compose down
+
 # Restart specific service
 restart SERVICE:
     @echo "Restarting service: {{SERVICE}}"
@@ -256,6 +245,11 @@ logs SERVICE:
 logs-sonarr INSTANCE:
     @echo "Showing logs for Sonarr {{INSTANCE}} instance"
     cd services/sonarr/{{INSTANCE}} && docker compose logs -f
+
+# Show logs for specific Radarr instance
+logs-radarr INSTANCE:
+    @echo "Showing logs for Radarr {{INSTANCE}} instance"
+    cd services/radarr/{{INSTANCE}} && docker compose logs -f
 
 # Pull latest images for all services
 pull-images:
@@ -310,7 +304,7 @@ validate:
 ```bash
 # Make changes to configurations
 vim nixos/configuration.nix
-vim services/sonarr/compose.yml
+vim services/sonarr/shows/compose.yml
 
 # Test NixOS changes locally (if using NixOS on dev machine)
 nixos-rebuild dry-build --flake ./nixos#homelab-hl15
@@ -319,8 +313,10 @@ nixos-rebuild dry-build --flake ./nixos#homelab-hl15
 nix flake check ./nixos
 
 # Test Docker Compose configurations
-docker compose -f services/sonarr/compose.yml config
-docker compose -f services/radarr/compose.yml config
+docker compose -f services/sonarr/shows/compose.yml config
+docker compose -f services/sonarr/anime/compose.yml config
+docker compose -f services/radarr/movies/compose.yml config
+docker compose -f services/radarr/anime/compose.yml config
 
 # Commit and push changes
 git add .
@@ -362,6 +358,10 @@ just deploy plex
 # Or deploy specific Sonarr instance
 just deploy-sonarr shows
 just deploy-sonarr anime
+
+# Or deploy specific Radarr instance
+just deploy-radarr movies
+just deploy-radarr anime
 ```
 
 #### Full Infrastructure Update
@@ -509,9 +509,9 @@ ping -c 3 8.8.8.8
 - [ ] Symbolic links created on server (/etc/nixos → /opt/homelab/nixos)
 - [ ] .gitignore properly configured to exclude secrets
 - [ ] .env.example files created for all services
-- [ ] Makefile deployment targets working
-- [ ] NixOS updates deployable via `make update-system`
-- [ ] Service updates deployable via `make update-services`
+- [ ] Justfile deployment targets working
+- [ ] NixOS updates deployable via `just update-system`
+- [ ] Service updates deployable via `just update-services`
 - [ ] Individual service deployment working
 - [ ] Rollback procedures tested and documented
 - [ ] Secret management workflow established

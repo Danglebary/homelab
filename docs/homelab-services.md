@@ -25,18 +25,18 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 - **Purpose**: TV show management and automation (non-anime content)
 - **External Access**: Admin only via Cloudflare Zero Trust
 - **Storage Requirements**:
-  - Config/Database: `/opt/homelab/services/sonarr/` (NVMe)
+  - Config/Database: `/opt/homelab/services/sonarr/shows/` (NVMe)
   - Media Library: `/mnt/vault/media/shows/` (ZFS)
   - Import Monitoring: `/mnt/vault/temp/transcoded/` (ZFS)
 - **Network**: Default bridge network
 - **Dependencies**: Prowlarr (indexers), Deluge (downloads), Tdarr (transcoding)
 - **Pipeline Role**: Receives Overseerr requests, manages downloads, imports transcoded media
 
-#### Sonarr-Anime (Anime Shows)
+#### Sonarr (Anime Shows)
 - **Purpose**: Dedicated anime management and automation
 - **External Access**: Admin only via Cloudflare Zero Trust
 - **Storage Requirements**:
-  - Config/Database: `/opt/homelab/services/sonarr-anime/` (NVMe)
+  - Config/Database: `/opt/homelab/services/sonarr/anime/` (NVMe)
   - Media Library: `/mnt/vault/media/anime/` (ZFS)
   - Import Monitoring: `/mnt/vault/temp/transcoded/` (ZFS)
 - **Network**: Default bridge network
@@ -48,7 +48,7 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 - **Purpose**: Movie management and automation
 - **External Access**: Admin only via Cloudflare Zero Trust
 - **Storage Requirements**:
-  - Config/Database: `/opt/homelab/services/radarr/` (NVMe)
+  - Config/Database: `/opt/homelab/services/radarr/movies/` (NVMe)
   - Media Library: `/mnt/vault/media/movies/` (ZFS)
   - Import Monitoring: `/mnt/vault/temp/transcoded/` (ZFS)
 - **Network**: Default bridge network
@@ -61,7 +61,7 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 - **Storage Requirements**:
   - Config/Database: `/opt/homelab/services/prowlarr/` (NVMe)
 - **Network**: Default bridge network
-- **Dependencies**: None (provides service to Sonarr/Sonarr-Anime/Radarr)
+- **Dependencies**: None (provides service to Sonarr/Radarr instances)
 - **Pipeline Role**: Proxies indexer requests from all *arr instances
 
 #### Overseerr (Media Requests)
@@ -71,7 +71,7 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 - **Storage Requirements**:
   - Config/Database: `/opt/homelab/services/overseerr/` (NVMe)
 - **Network**: Default bridge network
-- **Dependencies**: Sonarr, Sonarr-Anime, Radarr (sends requests to)
+- **Dependencies**: Sonarr/Radarr instances (sends requests to)
 - **Pipeline Role**: Entry point for user media requests
 - **Access Control**: Email-based authentication via Cloudflare, monthly re-auth required
 
@@ -182,7 +182,6 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 - **External Access**: Admin only via Cloudflare Zero Trust
 - **Storage Requirements**:
   - Config/Database: `/opt/homelab/services/grafana/` (NVMe)
-  - Dashboard Configs: `/mnt/vault/telemetry/grafana/` (ZFS)
 - **Network**: Default bridge network
 - **Dependencies**: Prometheus (metrics), Loki (logs), Tempo (traces - future)
 - **Dashboards**: System performance, service health, resource usage, log analysis
@@ -206,7 +205,7 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 - **External Access**: Yes via Cloudflare Zero Trust (limited family access)
 - **Storage Requirements**:
   - Config/Database: `/opt/homelab/services/immich/` (NVMe)
-  - Photo Library: `/mnt/vault/users/shared/photos/` (ZFS)
+  - Photo Library: `/mnt/vault/immich/` (ZFS)
   - Thumbnails/Cache: `/opt/homelab/services/immich/cache/` (NVMe)
 - **Network**: Default bridge network
 - **Dependencies**: None
@@ -217,7 +216,7 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 - **External Access**: Yes via Cloudflare Zero Trust (personal file access)
 - **Storage Requirements**:
   - Config/Database: `/opt/homelab/services/nextcloud/` (NVMe)
-  - File Storage: `/mnt/vault/users/shared/nextcloud/` (ZFS)
+  - File Storage: `/mnt/vault/nextcloud/` (ZFS)
 - **Network**: Default bridge network
 - **Dependencies**: None
 - **Features**: File sync, calendar, contacts, notes
