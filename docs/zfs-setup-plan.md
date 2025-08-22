@@ -107,7 +107,7 @@ vault/temp {
 
 ### Mount Points (Phase 1)
 ```
-/vault                      # Pool root (not typically used directly)
+/mnt/vault                 # Pool root (standard Linux mount convention)
 /mnt/vault/system          # System data
 /mnt/vault/users           # User directories
 /mnt/vault/media           # Media libraries

@@ -35,21 +35,37 @@ Building a comprehensive homelab on an HL15 2.0 server from 45HomeLab for media 
 ### Core Media Services
 - **Plex:** Media streaming server with hardware transcoding
 - **Deluge:** BitTorrent client (VPN-routed traffic only)
-- **Sonarr:** TV show management and automation
+- **Sonarr:** TV show management and automation (regular shows)
+- **Sonarr-Anime:** Dedicated anime management instance for better performance
 - **Radarr:** Movie management and automation  
+- **Tdarr:** Automated transcoding/re-encoding for consistent HEVC format
 - **Overseerr:** User-friendly media request interface for family/friends
 - **Prowlarr:** Indexer management for *arr stack
+- **Profilarr:** Automated custom formats and quality profiles management
 
 ### Self-Hosting Services
 - **Immich:** Photo management and sharing (limited family access)
 - **Nextcloud:** File sync and collaboration
-- **Uptime Kuma:** Service monitoring and status page
 
 ### Infrastructure Services
-- **Reverse Proxy:** TBD (Traefik/Nginx Proxy Manager)
+- **External Access:** Cloudflare Zero Trust tunnels for secure remote access
 - **VPN Gateway:** Gluetun container for torrent traffic isolation
+- **Pi-hole:** Network-wide DNS and ad/tracker blocking
+- **Homepage:** Central admin dashboard for service access and status
+
+### Observability & Monitoring Services
+- **Uptime Kuma:** Service availability monitoring and alerting
+- **Alloy:** Unified telemetry collection for logs, metrics, and traces
+- **Loki:** Centralized log storage and querying
+- **Prometheus:** Time-series metrics collection and storage
+- **Grafana:** Unified observability dashboard for metrics, logs, and traces
 
 ## Network Architecture
+
+### Hardware
+- **Modem:** Netgear Nighthawk cm2500
+- **Router:** TP-Link Deco AXE5300 Tri-Band Mesh Wi-Fi 6E System
+- **Switch:** Ubiquiti UniFi US-24-250W
 
 ### Physical Network
 - **Switch:** UniFi US-24-250W with LACP port aggregation
@@ -62,24 +78,30 @@ Building a comprehensive homelab on an HL15 2.0 server from 45HomeLab for media 
 - **Isolation Method:** Gluetun container as VPN gateway with kill-switch
 
 ### Remote Access
-- **Primary:** Cloudflare Zero Trust tunnels (free tier, up to 50 users)
+- **Method:** Cloudflare Zero Trust tunnels (free tier, up to 50 users)
 - **Domain:** halfblown.dev (managed via Cloudflare, paid through 2027)
-- **Access Control:** Family/friends for Overseerr (~10 max), limited access for Immich
+- **Service URLs:**
+  - `admin.halfblown.dev` → Homepage (admin dashboard)
+  - `request.halfblown.dev` → Overseerr (family/friends media requests)
+  - `monitor.halfblown.dev` → Uptime Kuma (admin monitoring)
+- **Access Control:** Email-based authentication with monthly re-auth, family/friends for Overseerr (~10 max)
 
 ## Container Management
 
 ### Docker Compose Strategy
 - **Orchestration:** Docker Compose for declarative service management
 - **Version Control:** All compose files and configs stored in Git
-- **Data Persistence:** 
-  - Media storage: ZFS pool (/mnt/tank or similar)
-  - App configs/databases: Boot drive (/opt/docker or similar)
-  - Container images: Boot drive
+- **Data Persistence Strategy:** 
+  - Fast storage for configs, databases, and local logging
+  - ZFS pool for media libraries and centralized telemetry
+  - Hybrid approach optimizing for performance and reliability
 
 ### Service Dependencies
-- **Storage:** ZFS pool must be mounted before media services start
-- **Network:** VPN container must be healthy before torrent services start
-- **Monitoring:** Uptime Kuma monitors all critical services
+- **Storage dependencies:** ZFS pool required for media services
+- **Network dependencies:** VPN isolation for torrent traffic
+- **Observability pipeline:** Centralized telemetry collection and analysis
+- **Media processing pipeline:** Automated download → transcode → organize → serve workflow
+- **Quality management:** Automated custom formats across media services
 
 ## Future Expansion Plans
 
@@ -89,8 +111,9 @@ Building a comprehensive homelab on an HL15 2.0 server from 45HomeLab for media 
 - Evaluate backup solutions when second machine available
 
 ### Service Additions
-- **Possible additions:** Jellyfin (Plex alternative), Home Assistant, Grafana/Prometheus
+- **Possible additions:** Jellyfin (Plex alternative), Home Assistant, Tempo (distributed tracing)
 - **Networking:** Additional VLANs or network segmentation as complexity grows
+- **Future Observability:** Full distributed tracing with Tempo integration
 
 ## Development Workflow & Rules
 
@@ -107,19 +130,14 @@ Building a comprehensive homelab on an HL15 2.0 server from 45HomeLab for media 
 ### Configuration Management
 - **NixOS:** All system configuration in version control with proper modularity
 - **Docker:** All compose files and application configs in version control
+- **User Management:** Service-specific users with domain-based group security (media, infrastructure, observability, web)
+- **Deployment:** Just-based workflow for consistent service management
 - **Documentation:** Keep CLAUDE.md and planning docs updated with changes
 
 ### Security Considerations
 - **VPN Isolation:** Ensure torrent traffic never leaks outside VPN tunnel
 - **Access Control:** Limit remote access to necessary services only
 - **Updates:** Regular security updates for both NixOS and container images
-
-## Current Status
-- ✅ NixOS installed and configured
-- ✅ Network bonding (LACP) operational with ~5Gbps aggregate bandwidth  
-- ✅ Basic system configuration modularized
-- ⏳ Planning Docker compose setup and ZFS configuration
-- ⏳ Planning application deployment and remote access setup
 
 ## Context Notes
 - **User Background:** Senior backend engineer with Kubernetes/Docker experience

@@ -10,6 +10,7 @@
       ./display.nix
       ./audio.nix
       ./ssh.nix
+      ./zfs.nix
     ];
 
   # Bootloader.

@@ -112,6 +112,36 @@ Integrate Home Manager into the existing flakes-based NixOS configuration to sup
   - Configured in Home Manager git config, not SSH authorized keys
 - **Benefits**: Clear audit trail per user role, separate credential management, shared git workflow
 
+### Remote SSH Access
+Both admin and dev users should have remote SSH access capabilities for system administration and development work:
+
+#### Admin User Remote Access
+- **Purpose**: Critical system administration when away from home
+- **Use Cases**: 
+  - Emergency service management and troubleshooting
+  - System monitoring and maintenance
+  - Docker container management and log review
+  - NixOS configuration deployments via git workflow
+- **Access Method**: SSH with dedicated admin server key
+- **Backup Access**: Essential for homelab reliability
+
+#### Dev User Remote Access  
+- **Purpose**: Development work and personal project access
+- **Use Cases**:
+  - Personal development project management
+  - Accessing development environments and tools
+  - Managing personal Docker containers and experiments
+  - Git operations for personal repositories
+- **Access Method**: SSH with dedicated dev server key
+- **Restrictions**: Cannot access admin services or perform system changes
+
+#### SSH Configuration Considerations
+- **Port Security**: Consider non-standard SSH port for additional security
+- **Key-Only Authentication**: Disable password authentication entirely
+- **Connection Limits**: Rate limiting and connection monitoring
+- **VPN Alternative**: Optional Tailscale/Wireguard for additional security layer
+- **Audit Logging**: SSH access logging for security monitoring
+
 ## Implementation Structure
 
 ```
@@ -172,7 +202,56 @@ nixos/
     "d /mnt/vault/users/dev/docker-data/volumes 0755 dev dev -"
     "d /mnt/vault/users/dev/docker-data/networks 0755 dev dev -"
     "d /mnt/vault/users/dev/tools 0755 dev dev -"
+    
+    # Centralized logging directory
+    "d /var/log/homelab 0755 root root -"
+    
+    # Telemetry data storage
+    "d /mnt/vault/telemetry 0755 root observability -"
+    "d /mnt/vault/telemetry/active 0755 root observability -"
+    "d /mnt/vault/telemetry/archived 0755 root observability -"
+    "d /mnt/vault/telemetry/metrics 0755 prometheus observability -"
+    "d /mnt/vault/telemetry/loki 0755 loki observability -"
+    "d /mnt/vault/telemetry/grafana 0755 grafana observability -"
+    "d /mnt/vault/telemetry/alloy 0755 alloy observability -"
   ];
+  
+  # Service user groups for security isolation
+  users.groups = {
+    media = {};
+    infrastructure = {}; 
+    observability = {};
+    web = {};
+  };
+  
+  # Service users (examples - complete during service deployment)
+  users.users = {
+    # Media services
+    plex = { group = "media"; extraGroups = []; isSystemUser = true; };
+    sonarr-shows = { group = "media"; extraGroups = []; isSystemUser = true; };
+    sonarr-anime = { group = "media"; extraGroups = []; isSystemUser = true; };
+    radarr = { group = "media"; extraGroups = []; isSystemUser = true; };
+    tdarr = { group = "media"; extraGroups = []; isSystemUser = true; };
+    deluge = { group = "media"; extraGroups = []; isSystemUser = true; };
+    overseerr = { group = "media"; extraGroups = []; isSystemUser = true; };
+    profilarr = { group = "media"; extraGroups = []; isSystemUser = true; };
+    
+    # Infrastructure services
+    pihole = { group = "infrastructure"; extraGroups = []; isSystemUser = true; };
+    gluetun = { group = "infrastructure"; extraGroups = []; isSystemUser = true; };
+    homepage = { group = "infrastructure"; extraGroups = []; isSystemUser = true; };
+    
+    # Observability services
+    prometheus = { group = "observability"; extraGroups = []; isSystemUser = true; };
+    grafana = { group = "observability"; extraGroups = []; isSystemUser = true; };
+    uptime-kuma = { group = "observability"; extraGroups = []; isSystemUser = true; };
+    alloy = { group = "observability"; extraGroups = []; isSystemUser = true; };
+    loki = { group = "observability"; extraGroups = []; isSystemUser = true; };
+    
+    # Web services
+    immich = { group = "web"; extraGroups = []; isSystemUser = true; };
+    nextcloud = { group = "web"; extraGroups = []; isSystemUser = true; };
+  };
 }
 ```
 
@@ -182,7 +261,14 @@ nixos/
   users.users.admin = {
     isNormalUser = true;
     description = "System Administrator";
-    extraGroups = [ "wheel" "docker" "systemd-journal" ];
+    extraGroups = [ 
+      "wheel" 
+      "docker" 
+      "systemd-journal"
+      "media"           # Access to media files for troubleshooting
+      "infrastructure"  # Access to infrastructure services
+      "observability"   # Access to monitoring and logs
+    ];
     home = "/home/admin";
     openssh.authorizedKeys.keys = [ 
       "ssh-ed25519 AAAA...admin-server-key user@machine" # Admin server access key
