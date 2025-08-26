@@ -8,8 +8,8 @@
   # ZFS kernel module settings
   boot.kernelParams = [
     # Set ZFS ARC cache limits for 256GB RAM system
-    "zfs.zfs_arc_max=137438953472"  # 128GB max
     "zfs.zfs_arc_min=68719476736"   # 64GB min
+    "zfs.zfs_arc_max=137438953472"  # 128GB max
   ];
 
   # ZFS services

@@ -30,35 +30,15 @@ Building a comprehensive homelab on an HL15 2.0 server from 45HomeLab for media 
 - **Expansion Plan:** Add drive pairs to expand pool capacity
 - **Benefits:** Data integrity, snapshots, compression, excellent for media workloads
 
-## Application Stack
+## Application Architecture
 
-### Core Media Services
-- **Plex:** Media streaming server with hardware transcoding
-- **Deluge:** BitTorrent client (VPN-routed traffic only)
-- **Sonarr:** TV show management and automation (regular shows)
-- **Sonarr-Anime:** Dedicated anime management instance for better performance
-- **Radarr:** Movie management and automation  
-- **Tdarr:** Automated transcoding/re-encoding for consistent HEVC format
-- **Overseerr:** User-friendly media request interface for family/friends
-- **Prowlarr:** Indexer management for *arr stack
-- **Profilarr:** Automated custom formats and quality profiles management
+### Service Categories
+- **Media Services:** Automated media management and streaming pipeline
+- **Self-Hosting Services:** Personal cloud services for family use
+- **Infrastructure Services:** Core networking, security, and system services
+- **Observability Services:** Comprehensive monitoring, logging, and metrics collection
 
-### Self-Hosting Services
-- **Immich:** Photo management and sharing (limited family access)
-- **Nextcloud:** File sync and collaboration
-
-### Infrastructure Services
-- **External Access:** Cloudflare Zero Trust tunnels for secure remote access
-- **VPN Gateway:** Gluetun container for torrent traffic isolation
-- **Pi-hole:** Network-wide DNS and ad/tracker blocking
-- **Homepage:** Central admin dashboard for service access and status
-
-### Observability & Monitoring Services
-- **Uptime Kuma:** Service availability monitoring and alerting
-- **Alloy:** Unified telemetry collection for logs, metrics, and traces
-- **Loki:** Centralized log storage and querying
-- **Prometheus:** Time-series metrics collection and storage
-- **Grafana:** Unified observability dashboard for metrics, logs, and traces
+*Detailed service specifications and configurations are documented in `docs/homelab-services.md`*
 
 ## Network Architecture
 
@@ -72,19 +52,17 @@ Building a comprehensive homelab on an HL15 2.0 server from 45HomeLab for media 
 - **Bonding:** 802.3ad LACP with layer3+4 hashing for optimal distribution
 - **IP:** Static 192.168.68.100/24 on bond0 interface
 
-### Application Network Segmentation
-- **VPN Network:** Deluge and related torrent traffic through PIA VPN
-- **Default Network:** All other services with direct internet access
-- **Isolation Method:** Gluetun container as VPN gateway with kill-switch
+### Network Segmentation
+- **VPN Isolation:** Torrent traffic routed through VPN with kill-switch protection
+- **Service Isolation:** Container-based network segmentation for security
 
 ### Remote Access
 - **Method:** Cloudflare Zero Trust tunnels (free tier, up to 50 users)
 - **Domain:** halfblown.dev (managed via Cloudflare, paid through 2027)
-- **Service URLs:**
-  - `admin.halfblown.dev` → Homepage (admin dashboard)
-  - `request.halfblown.dev` → Overseerr (family/friends media requests)
-  - `monitor.halfblown.dev` → Uptime Kuma (admin monitoring)
-- **Access Control:** Email-based authentication with monthly re-auth, family/friends for Overseerr (~10 max)
+- **Domain Structure:** Subdomain-based service access with Cloudflare SSL management
+- **Access Control:** Email-based authentication with monthly re-auth, selective family access
+
+*Specific service URLs and access patterns documented in `docs/homelab-services.md`*
 
 ## Container Management
 
@@ -96,12 +74,12 @@ Building a comprehensive homelab on an HL15 2.0 server from 45HomeLab for media 
   - ZFS pool for media libraries and centralized telemetry
   - Hybrid approach optimizing for performance and reliability
 
-### Service Dependencies
-- **Storage dependencies:** ZFS pool required for media services
-- **Network dependencies:** VPN isolation for torrent traffic
-- **Observability pipeline:** Centralized telemetry collection and analysis
-- **Media processing pipeline:** Automated download → transcode → organize → serve workflow
-- **Quality management:** Automated custom formats across media services
+### Service Architecture
+- **Storage Strategy:** Hybrid approach with NVMe for configs/databases, ZFS for media/data
+- **Network Strategy:** VPN isolation for high-risk traffic, secure tunnels for external access
+- **Processing Pipeline:** Automated media workflow from request to consumption
+
+*Detailed service dependencies and pipeline documentation in `docs/media-pipeline.md`*
 
 ## Future Expansion Plans
 

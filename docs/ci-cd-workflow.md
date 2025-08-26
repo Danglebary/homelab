@@ -1,31 +1,48 @@
 # CI/CD Workflow for Homelab Infrastructure
 
 ## Overview
-Git-based infrastructure-as-code workflow for managing both NixOS system configuration and Docker service deployments on the HL15 homelab server. This workflow enables rapid, consistent deployments while maintaining security through proper secret management.
+Hybrid infrastructure-as-code workflow combining NixOS system management with Docker service deployment on the HL15 homelab server. NixOS handles system-level configuration (users, groups, permissions, directories) while Docker Compose manages application services. Just provides declarative dependency management and deployment automation.
 
 ## Repository Structure
 
-### Current Structure
+### Repository Structure (Infrastructure as Code)
 ```
-homelab/
+homelab/                          # Git repository at /opt/homelab/
 ├── CLAUDE.md
 ├── .gitignore
-├── Justfile                      # Deployment automation
+├── Justfile                      # Declarative deployment automation
 ├── docs/
 │   └── ... documentation and planning files ...
 ├── nixos/
-│   ├── ... NixOS modular system configuration files ...
+│   ├── modules/
+│   │   ├── services/
+│   │   │   └── [service]/user.nix    # Individual service user configs
+│   │   ├── groups/
+│   │   │   └── [group]/[group].nix   # Domain group definitions
+│   │   └── default.nix               # Module imports
+│   ├── ... other NixOS system configuration files ...
 │   └── users/
-│       └── ... User account configuration files ...
+│       └── ... Human user account configuration files ...
 └── services/
     ├── README.template.md
     └── [service]/
         ├── README.md
-        ├── compose.yml
-        ├── .env
-        ├── .env.example
-        └── ... additional service-related configs/data ...
+        ├── compose.yml               # Standard Docker Compose
+        ├── .env                      # Actual secrets (gitignored)
+        └── .env.example              # Template (committed)
 ```
+
+### Runtime Data Structure (Service State)
+```
+/var/lib/services/                # Service runtime data (separate from repo)
+├── [service]/                    # Single-instance services
+│   └── ... service manages its own files/directories ...
+└── [service]/                    # Multi-instance services
+    └── [instance]/               # Instance-specific data
+        └── ... service manages its own files/directories ...
+```
+
+**Note:** Each service has full control over its runtime directory structure. Services will organize their config files, databases, logs, and cache however they need internally. Using `/var/lib/services/` follows Linux filesystem hierarchy standards for variable service data.
 
 ## Server Setup (One-Time Configuration)
 
@@ -40,6 +57,10 @@ sudo ln -sf /opt/homelab/nixos /etc/nixos
 # Configure git for safe directory access
 cd /opt/homelab
 sudo git config --global --add safe.directory /opt/homelab
+
+# Create runtime data directory structure
+sudo mkdir -p /var/lib/services
+sudo chown -R admin:admin /var/lib/services
 
 # Set proper permissions for service directories
 sudo chown -R admin:admin /opt/homelab/services
@@ -61,6 +82,22 @@ sudo nano /opt/homelab/services/sonarr/anime/.env
 sudo nano /opt/homelab/services/radarr/movies/.env
 sudo nano /opt/homelab/services/radarr/anime/.env
 sudo nano /opt/homelab/services/plex/.env
+```
+
+### Runtime Data Directory Creation
+```bash
+# NixOS modules will handle this automatically, but for reference:
+# Service runtime directories are created at:
+# /var/lib/services/[service]/          # Single-instance services
+# /var/lib/services/[service]/[instance]/ # Multi-instance services (sonarr, radarr)
+
+# Each service has full ownership of its directory and manages:
+# - Internal file/directory organization
+# - Configuration files and databases
+# - Logs and temporary files
+# - Any other service-specific data
+
+# Using /var/lib/services/ follows Linux FHS for variable service data
 ```
 
 ## Git Configuration for Public Repository
@@ -148,6 +185,12 @@ NETWORK_NAME=homelab_network
 
 ## Deployment Automation with Justfile
 
+### Hybrid Deployment Strategy
+The Justfile implements a declarative dependency system where each service has an `ensure-[service]` recipe that:
+1. Ensures all dependencies are running first
+2. Starts the service itself
+3. Provides idempotent operations (safe to run multiple times)
+
 ### Justfile Structure
 ```just
 # Default recipe
@@ -155,102 +198,157 @@ default:
     @just --list
 
 # Update system and all services
-deploy-all: update-system update-services
+deploy-all: update-system
+    @echo "Deploying all services with proper dependency order..."
+    @just ensure-plex ensure-sonarr-shows ensure-sonarr-anime ensure-radarr-movies ensure-overseerr
     @echo "Full deployment complete!"
 
-# Update NixOS configuration only
+# Update NixOS configuration only (handles users, groups, permissions)
 update-system:
     @echo "Updating NixOS system configuration..."
     git pull
     nixos-rebuild switch
 
-# Update all Docker services only
-update-services:
-    @echo "Updating all Docker services..."
+# Infrastructure services (foundational)
+ensure-gluetun:
+    @echo "Ensuring gluetun VPN gateway is running..."
+    cd services/gluetun && docker compose up -d
+
+ensure-pihole:
+    @echo "Ensuring pihole DNS is running..."
+    cd services/pihole && docker compose up -d
+
+# Media pipeline dependencies
+ensure-prowlarr: ensure-gluetun
+    @echo "Ensuring prowlarr indexer management is running..."
+    cd services/prowlarr && docker compose up -d
+
+ensure-deluge: ensure-gluetun
+    @echo "Ensuring deluge torrent client is running..."
+    cd services/deluge && docker compose up -d
+
+ensure-tdarr: ensure-deluge
+    @echo "Ensuring tdarr transcoding is running..."
+    cd services/tdarr && docker compose up -d
+
+ensure-profilarr: ensure-prowlarr
+    @echo "Ensuring profilarr quality management is running..."
+    cd services/profilarr && docker compose up -d
+
+# Content management services
+ensure-sonarr-shows: ensure-prowlarr ensure-tdarr ensure-profilarr
+    @echo "Ensuring sonarr TV shows is running..."
+    cd services/sonarr/shows && docker compose up -d
+
+ensure-sonarr-anime: ensure-prowlarr ensure-tdarr ensure-profilarr
+    @echo "Ensuring sonarr anime shows is running..."
+    cd services/sonarr/anime && docker compose up -d
+
+ensure-radarr-movies: ensure-prowlarr ensure-tdarr ensure-profilarr
+    @echo "Ensuring radarr movies is running..."
+    cd services/radarr/movies && docker compose up -d
+
+ensure-radarr-anime: ensure-prowlarr ensure-tdarr ensure-profilarr
+    @echo "Ensuring radarr anime movies is running..."
+    cd services/radarr/anime && docker compose up -d
+
+ensure-overseerr: ensure-sonarr-shows ensure-sonarr-anime ensure-radarr-movies ensure-radarr-anime
+    @echo "Ensuring overseerr media requests is running..."
+    cd services/overseerr && docker compose up -d
+
+# Media server (end of pipeline)
+ensure-plex: ensure-tdarr
+    @echo "Ensuring plex media server is running..."
+    cd services/plex && docker compose up -d
+
+# Observability services
+ensure-alloy:
+    @echo "Ensuring alloy telemetry collection is running..."
+    cd services/alloy && docker compose up -d
+
+ensure-loki: ensure-alloy
+    @echo "Ensuring loki log aggregation is running..."
+    cd services/loki && docker compose up -d
+
+ensure-prometheus: ensure-alloy
+    @echo "Ensuring prometheus metrics is running..."
+    cd services/prometheus && docker compose up -d
+
+ensure-grafana: ensure-loki ensure-prometheus
+    @echo "Ensuring grafana dashboards is running..."
+    cd services/grafana && docker compose up -d
+
+ensure-homepage:
+    @echo "Ensuring homepage admin dashboard is running..."
+    cd services/homepage && docker compose up -d
+
+# Self-hosting services
+ensure-immich:
+    @echo "Ensuring immich photo management is running..."
+    cd services/immich && docker compose up -d
+
+ensure-nextcloud:
+    @echo "Ensuring nextcloud file sync is running..."
+    cd services/nextcloud && docker compose up -d
+
+# User-facing deployment commands
+deploy service: update-system
+    @echo "Deploying service: {{service}}"
     git pull
+    @just ensure-{{service}}
+
+# Service group deployments
+deploy-media: update-system
+    @echo "Deploying media pipeline services..."
+    git pull
+    @just ensure-plex ensure-sonarr-shows ensure-sonarr-anime ensure-radarr-movies ensure-radarr-anime ensure-overseerr
+
+deploy-monitoring: update-system
+    @echo "Deploying observability services..."
+    git pull
+    @just ensure-grafana ensure-homepage
+
+deploy-infrastructure: update-system
+    @echo "Deploying infrastructure services..."
+    git pull
+    @just ensure-gluetun ensure-pihole ensure-homepage
+
+deploy-selfhosting: update-system
+    @echo "Deploying self-hosting services..."
+    git pull
+    @just ensure-immich ensure-nextcloud
+
+# Service management commands
+stop service:
+    @echo "Stopping service: {{service}}"
     #!/usr/bin/env bash
-    for dir in services/*/; do
-        if [ -f "$dir/compose.yml" ]; then
-            echo "Updating service in $dir"
-            cd "$dir" && docker compose up -d --remove-orphans
-            cd - > /dev/null
-        fi
-    done
+    if [[ "{{service}}" == sonarr-* ]]; then
+        instance=${service#sonarr-}
+        cd services/sonarr/$instance && docker compose down
+    elif [[ "{{service}}" == radarr-* ]]; then
+        instance=${service#radarr-}
+        cd services/radarr/$instance && docker compose down
+    else
+        cd services/{{service}} && docker compose down
+    fi
 
-# Update media services (Plex, Sonarr, Radarr, Overseerr)
-deploy-media:
-    @echo "Deploying media services..."
-    git pull
-    cd services/plex && docker compose up -d --remove-orphans
-    cd services/sonarr/shows && docker compose up -d --remove-orphans
-    cd services/sonarr/anime && docker compose up -d --remove-orphans
-    cd services/radarr/movies && docker compose up -d --remove-orphans
-    cd services/radarr/anime && docker compose up -d --remove-orphans
-    cd services/overseerr && docker compose up -d --remove-orphans
-    cd services/tdarr && docker compose up -d --remove-orphans
+restart service:
+    @echo "Restarting service: {{service}}"
+    @just stop {{service}}
+    @just ensure-{{service}}
 
-# Update monitoring services
-deploy-monitoring:
-    @echo "Deploying monitoring services..."
-    git pull
-    cd services/alloy && docker compose up -d --remove-orphans
-    cd services/loki && docker compose up -d --remove-orphans
-    cd services/prometheus && docker compose up -d --remove-orphans
-    cd services/grafana && docker compose up -d --remove-orphans
-    cd services/homepage && docker compose up -d --remove-orphans
-
-# Deploy specific service
-deploy SERVICE:
-    @echo "Deploying service: {{SERVICE}}"
-    git pull
-    cd services/{{SERVICE}} && docker compose up -d --remove-orphans
-
-# Deploy specific Sonarr instance (shows or anime)
-deploy-sonarr INSTANCE:
-    @echo "Deploying Sonarr {{INSTANCE}} instance"
-    git pull
-    cd services/sonarr/{{INSTANCE}} && docker compose up -d --remove-orphans
-
-# Deploy specific Radarr instance 
-deploy-radarr INSTANCE:
-    @echo "Deploying Radarr {{INSTANCE}} instance"
-    git pull
-    cd services/radarr/{{INSTANCE}} && docker compose up -d --remove-orphans
-
-# Stop specific service
-stop SERVICE:
-    @echo "Stopping service: {{SERVICE}}"
-    cd services/{{SERVICE}} && docker compose down
-
-# Stop specific Sonarr instance
-stop-sonarr INSTANCE:
-    @echo "Stopping Sonarr {{INSTANCE}} instance"
-    cd services/sonarr/{{INSTANCE}} && docker compose down
-
-# Stop specific Radarr instance
-stop-radarr INSTANCE:
-    @echo "Stopping Radarr {{INSTANCE}} instance"
-    cd services/radarr/{{INSTANCE}} && docker compose down
-
-# Restart specific service
-restart SERVICE:
-    @echo "Restarting service: {{SERVICE}}"
-    cd services/{{SERVICE}} && docker compose down && docker compose up -d --remove-orphans
-
-# Show logs for specific service
-logs SERVICE:
-    @echo "Showing logs for service: {{SERVICE}}"
-    cd services/{{SERVICE}} && docker compose logs -f
-
-# Show logs for specific Sonarr instance
-logs-sonarr INSTANCE:
-    @echo "Showing logs for Sonarr {{INSTANCE}} instance"
-    cd services/sonarr/{{INSTANCE}} && docker compose logs -f
-
-# Show logs for specific Radarr instance
-logs-radarr INSTANCE:
-    @echo "Showing logs for Radarr {{INSTANCE}} instance"
-    cd services/radarr/{{INSTANCE}} && docker compose logs -f
+logs service:
+    @echo "Showing logs for service: {{service}}"
+    #!/usr/bin/env bash
+    if [[ "{{service}}" == sonarr-* ]]; then
+        instance=${service#sonarr-}
+        cd services/sonarr/$instance && docker compose logs -f
+    elif [[ "{{service}}" == radarr-* ]]; then
+        instance=${service#radarr-}
+        cd services/radarr/$instance && docker compose logs -f
+    else
+        cd services/{{service}} && docker compose logs -f
+    fi
 
 # Pull latest images for all services
 pull-images:
