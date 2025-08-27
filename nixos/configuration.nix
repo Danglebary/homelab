@@ -9,8 +9,6 @@
       ./users/halfblown.nix
       ./users/admin.nix
       ./users/dev.nix
-      ./display.nix
-      ./audio.nix
       ./ssh.nix
       ./zfs.nix
       ./docker.nix
