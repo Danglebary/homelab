@@ -22,7 +22,8 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Use latest kernel.
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # NOTE: commented out as zfs is marked as broken in latest kernel (6.16.2)
+  # boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Enable flakes support
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
