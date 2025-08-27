@@ -3,6 +3,9 @@
 {
   # Set our hostname
   networking.hostName = "homelab-hl15";
+  
+  # Required for ZFS - unique identifier for this machine
+  networking.hostId = "8425e349";
 
   # Disable NetworkManager in favor of networkd
   networking.useNetworkd = true;
@@ -38,16 +41,16 @@
       dns = [ "192.168.68.1" ];
     };
 
-    "20-eno1np0" = {
-      matchConfig.Name = "eno1np0";
+    "20-eno1" = {
+      matchConfig.Name = "eno1";
       networkConfig = {
         Bond = "bond0";
         DHCP = "no";
       };
     };
 
-    "21-eno2np1" = {
-      matchConfig.Name = "eno2np1";
+    "21-eno2" = {
+      matchConfig.Name = "eno2";
       networkConfig = {
         Bond = "bond0";
         DHCP = "no";

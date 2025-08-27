@@ -3,7 +3,7 @@
 {
   # Enable ZFS support
   boot.supportedFilesystems = [ "zfs" ];
-  # boot.zfs.extraPools = [ "vault" ];  # Commented out until pool is created
+  boot.zfs.extraPools = [ "vault" ];
 
   # ZFS kernel module settings
   boot.kernelParams = [
@@ -17,7 +17,7 @@
     autoScrub = {
       enable = true;
       interval = "monthly";
-      # pools = [ "vault" ];  # Commented out until pool is created
+      pools = [ "vault" ];
     };
     autoSnapshot = {
       enable = true;
@@ -29,19 +29,19 @@
     };
   };
 
-  # Mount vault pool - Commented out until pool is created
-  # fileSystems."/mnt/vault" = {
-  #   device = "vault";
-  #   fsType = "zfs";
-  #   options = [ "zfsutil" ];
-  # };
+  # Mount vault pool
+  fileSystems."/mnt/vault" = {
+    device = "vault";
+    fsType = "zfs";
+    options = [ "zfsutil" ];
+  };
 
-  # Create basic directory structure (Phase 1) - Commented out until pool is created
-  # systemd.tmpfiles.rules = [
-  #   # Main dataset directories
-  #   "d /mnt/vault/system 0755 root root -"
-  #   "d /mnt/vault/users 0755 root root -"
-  #   "d /mnt/vault/media 0755 root root -"
-  #   "d /mnt/vault/temp 0755 root root -"
-  # ];
+  # Create basic directory structure (Phase 1)
+  systemd.tmpfiles.rules = [
+    # Main dataset directories
+    "d /mnt/vault/system 0755 root root -"
+    "d /mnt/vault/users 0755 root root -"
+    "d /mnt/vault/media 0755 root root -"
+    "d /mnt/vault/temp 0755 root root -"
+  ];
 }
