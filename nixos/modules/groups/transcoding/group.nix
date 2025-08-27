@@ -11,6 +11,6 @@
   # Create transcoding directories with proper permissions
   systemd.tmpfiles.rules = [
     # Transcoded files directory (setgid bit ensures group inheritance)
-    "d /mnt/vault/transcoded 2775 root transcoding -"
+    "d /mnt/vault/temp/transcoded 2775 root transcoding -"
   ];
 }
