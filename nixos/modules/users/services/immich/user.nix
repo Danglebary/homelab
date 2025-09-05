@@ -25,6 +25,6 @@
     "d /var/log/services/immich 0755 1000 1000 -"
     
     # Immich photo/video storage on ZFS (container creates subdirectories as needed)
-    "d /mnt/vault/immich 0755 1000 1000 -"
+    "d /mnt/vault/immich 0775 1000 1000 -"
   ];
 }
