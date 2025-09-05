@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     
     # Use container's node user (non-root)
-    user: "1000:1000"  # node:node
+    user: "2050:3000"  # node:node
     
     ports:
       - "2283:2283"
@@ -61,7 +61,7 @@ services:
     restart: unless-stopped
     
     # Use container's node user (non-root)
-    user: "1000:1000"  # node:node
+    user: "2050:3000"  # node:node
     
     volumes:
       # Machine learning models cache
@@ -89,7 +89,7 @@ services:
     restart: unless-stopped
     
     # Use container's node user (non-root)
-    user: "1000:1000"  # node:node
+    user: "2050:3000"  # node:node
     
     volumes:
       # Redis data persistence

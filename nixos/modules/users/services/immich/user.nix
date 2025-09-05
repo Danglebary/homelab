@@ -16,15 +16,15 @@
   # Ensure required directories exist with correct permissions
   systemd.tmpfiles.rules = [
     # Service runtime directory (containers run as UID 1000 node user)
-    "d /var/lib/services/immich 0755 1000 1000 -"
+    "d /var/lib/services/immich 0755 2050 3000 -"
     # PostgreSQL data is now managed by Docker named volume
-    "d /var/lib/services/immich/redis 0755 1000 1000 -"
-    "d /var/lib/services/immich/ml-cache 0755 1000 1000 -"
+    "d /var/lib/services/immich/redis 0755 2050 3000 -"
+    "d /var/lib/services/immich/ml-cache 0755 2050 3000 -"
 
     # Service logging directory for local log storage
-    "d /var/log/services/immich 0755 1000 1000 -"
+    "d /var/log/services/immich 0755 2050 3000 -"
     
     # Immich photo/video storage on ZFS (container creates subdirectories as needed)
-    "d /mnt/vault/immich 0775 1000 1000 -"
+    "d /mnt/vault/immich 0775 2050 3000 -"
   ];
 }
