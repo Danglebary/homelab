@@ -6,8 +6,8 @@ services:
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     restart: unless-stopped
     
-    # Service identity (must match NixOS user)
-    user: "2050:3000"  # immich:services
+    # Use container's node user (non-root)
+    user: "1000:1000"  # node:node
     
     ports:
       - "2283:2283"
@@ -60,8 +60,8 @@ services:
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
     restart: unless-stopped
     
-    # Service identity (must match NixOS user)  
-    user: "2050:3000"  # immich:services
+    # Use container's node user (non-root)
+    user: "1000:1000"  # node:node
     
     volumes:
       # Machine learning models cache
@@ -88,8 +88,8 @@ services:
     image: docker.io/valkey/valkey:8-bookworm
     restart: unless-stopped
     
-    # Service identity (must match NixOS user)
-    user: "2050:3000"  # immich:services
+    # Use container's node user (non-root)
+    user: "1000:1000"  # node:node
     
     volumes:
       # Redis data persistence
