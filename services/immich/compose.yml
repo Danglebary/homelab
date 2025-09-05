@@ -116,8 +116,8 @@ services:
       - PGDATA=/var/lib/postgresql/data
     
     volumes:
-      # Database storage
-      - /var/lib/services/immich/postgres:/var/lib/postgresql/data:rw
+      # Database storage (Docker managed volume for proper permissions)
+      - immich_postgres_data:/var/lib/postgresql/data
       
       # Logging
       - /var/log/services/immich:/logs:rw
@@ -131,6 +131,10 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+
+volumes:
+  immich_postgres_data:
+    driver: local
 
 networks:
   default:
