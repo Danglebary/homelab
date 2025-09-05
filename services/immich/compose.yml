@@ -13,9 +13,6 @@ services:
     volumes:
       - /mnt/vault/immich:/usr/src/app/upload:rw
       - /var/lib/services/immich:/config:rw
-      - /var/lib/services/immich/ml-cache:/.cache:rw
-      - /var/lib/services/immich/ml-config:/.config:rw
-      - /var/lib/services/immich/reverse-geocoding:/usr/src/app/.reverse-geocoding-dump:rw
       - /etc/localtime:/etc/localtime:ro
 
 
