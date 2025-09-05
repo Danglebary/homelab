@@ -81,7 +81,7 @@ services:
     restart: unless-stopped
     
     volumes:
-      - /var/lib/services/immich/redis:/data:rw
+      - immich_redis_data:/data
     
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -126,6 +126,8 @@ services:
 
 volumes:
   immich_postgres_data:
+    driver: local
+  immich_redis_data:
     driver: local
 
 networks:

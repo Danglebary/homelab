@@ -8,9 +8,8 @@
   # Ensure required directories exist with correct permissions
   # Docker containers running as root will handle internal permissions
   systemd.tmpfiles.rules = [
-    # Service runtime directory for Redis and ML cache
+    # Service runtime directory for ML cache
     "d /var/lib/services/immich 0755 root root -"
-    "d /var/lib/services/immich/redis 0755 root root -"
     "d /var/lib/services/immich/ml-cache 0755 root root -"
     
     # Immich photo/video storage on ZFS
