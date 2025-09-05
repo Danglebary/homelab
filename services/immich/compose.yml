@@ -15,6 +15,15 @@ services:
 
     environment:
       - TZ=${TZ}
+      # Database connection
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_DATABASE_NAME=${DB_DATABASE_NAME}
+      - DB_HOSTNAME=immich_postgres
+      - DB_PORT=5432
+      # Redis connection
+      - REDIS_HOSTNAME=immich_redis
+      - REDIS_PORT=6379
     
     security_opt:
       - no-new-privileges:true
@@ -25,17 +34,6 @@ services:
       - SETUID
       - SETGID
       - DAC_OVERRIDE
-      
-      # Database connection
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_DATABASE_NAME=${DB_DATABASE_NAME}
-      - DB_HOSTNAME=immich_postgres
-      - DB_PORT=5432
-      
-      # Redis connection
-      - REDIS_HOSTNAME=immich_redis
-      - REDIS_PORT=6379
     
     depends_on:
       database:
