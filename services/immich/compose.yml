@@ -107,6 +107,9 @@ services:
     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
     restart: unless-stopped
     
+    # Service identity (must match NixOS user)
+    user: "2050:3000"  # immich:services
+    
     environment:
       # Database configuration from .env
       - POSTGRES_PASSWORD=${DB_PASSWORD}
