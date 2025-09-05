@@ -17,7 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (775 allows group write access for containers)
     "d /var/lib/services/immich 0775 immich services -"
-    "d /var/lib/services/immich/postgres 0775 immich services -"
+    # PostgreSQL directory needs postgres user ownership (UID 999)
+    "d /var/lib/services/immich/postgres 0750 999 999 -"
     "d /var/lib/services/immich/redis 0775 immich services -"
     "d /var/lib/services/immich/ml-cache 0775 immich services -"
 
