@@ -26,5 +26,12 @@
     
     # Immich photo/video storage on ZFS (container needs write access)
     "d /mnt/vault/immich 0775 immich services -"
+    # Immich required subdirectories for system integrity checks
+    "d /mnt/vault/immich/upload 0775 immich services -"
+    "d /mnt/vault/immich/library 0775 immich services -"
+    "d /mnt/vault/immich/thumbs 0775 immich services -"
+    "d /mnt/vault/immich/encoded-video 0775 immich services -"
+    "d /mnt/vault/immich/profile 0775 immich services -"
+    "d /mnt/vault/immich/backups 0775 immich services -"
   ];
 }
