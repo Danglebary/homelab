@@ -3,27 +3,22 @@ name: immich
 services:
   immich-server:
     container_name: immich_server
+    user: "2050:3000"
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     restart: unless-stopped
-    
-    # Use container's node user (non-root)
-    user: "2050:3000"  # node:node
     
     ports:
       - "2283:2283"
     
     volumes:
-      # Photo and video storage
       - /mnt/vault/immich:/usr/src/app/upload:rw
-      
-      # Service configuration
       - /var/lib/services/immich:/config:rw
-      
-      # Logging
-      - /var/log/services/immich:/logs:rw
-      
-      # System time
+      - /var/lib/services/immich/ml-cache:/.cache:rw
+      - /var/lib/services/immich/ml-config:/.config:rw
+      - /var/lib/services/immich/reverse-geocoding:/usr/src/app/.reverse-geocoding-dump:rw
       - /etc/localtime:/etc/localtime:ro
+
+
     
     environment:
       # Load from .env file
