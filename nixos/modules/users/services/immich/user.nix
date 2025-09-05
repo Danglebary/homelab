@@ -15,10 +15,13 @@
   
   # Ensure required directories exist with correct permissions
   systemd.tmpfiles.rules = [
-    # Service runtime directory (immich manages internal structure)
-    "d /var/lib/services/immich 0755 immich services -"
+    # Service runtime directory (775 allows group write access for containers)
+    "d /var/lib/services/immich 0775 immich services -"
+    "d /var/lib/services/immich/postgres 0775 immich services -"
+    "d /var/lib/services/immich/redis 0775 immich services -"
+    "d /var/lib/services/immich/ml-cache 0775 immich services -"
 
     # Service logging directory for local log storage
-    "d /var/log/services/immich 0755 immich services -"
+    "d /var/log/services/immich 0775 immich services -"
   ];
 }
