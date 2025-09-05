@@ -31,7 +31,7 @@
     ./users/services/loki/user.nix
     ./users/services/prometheus/user.nix
     ./users/services/grafana/user.nix
-    ./users/services/immich/user.nix
+    ./system/directories/immich.nix
     ./users/services/nextcloud/user.nix
   ];
 }
