@@ -1,3 +1,7 @@
+# Default recipe - show available commands
+default:
+    just --list
+
 # NixOS System Management Commands
 
 # Sync nixos configuration from repo to system location
@@ -21,3 +25,7 @@ sys-down:
 # Infrastructure services (foundational)
 ensure-gluetun:
     ./scripts/ensure-service.sh gluetun services/gluetun
+
+# Self-hosting services
+ensure-immich:
+    ./scripts/ensure-service.sh immich_server services/immich
