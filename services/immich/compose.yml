@@ -91,6 +91,8 @@ services:
       - CHOWN
       - SETUID
       - SETGID
+      - DAC_OVERRIDE
+      - FOWNER
     
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
