@@ -17,5 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (nextcloud manages internal structure)
     "d /var/lib/services/nextcloud 0755 nextcloud services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/nextcloud 0755 nextcloud services -"
   ];
 }

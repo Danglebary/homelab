@@ -18,5 +18,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (plex manages internal structure)
     "d /var/lib/services/plex 0755 plex services -"
+    
+    # Service logging directory for local log storage
+    "d /var/log/services/plex 0755 plex services -"
   ];
 }

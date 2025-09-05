@@ -17,5 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (pihole manages internal structure)
     "d /var/lib/services/pihole 0755 pihole services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/pihole 0755 pihole services -"
   ];
 }

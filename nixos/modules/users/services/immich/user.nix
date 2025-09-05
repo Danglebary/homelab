@@ -17,5 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (immich manages internal structure)
     "d /var/lib/services/immich 0755 immich services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/immich 0755 immich services -"
   ];
 }

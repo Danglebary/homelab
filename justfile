@@ -11,3 +11,9 @@ sys-up:
 # Rollback to previous system generation
 sys-down:
     sudo nixos-rebuild switch --rollback
+
+# Docker Service Management Commands
+
+# Infrastructure services (foundational)
+ensure-gluetun:
+    ./scripts/ensure-service.sh gluetun services/gluetun

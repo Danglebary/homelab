@@ -19,5 +19,9 @@
     # Service runtime directory (sonarr manages internal structure)
     "d /var/lib/services/sonarr 0755 root services -"
     "d /var/lib/services/sonarr/shows 0755 sonarr.shows services -"
+    
+    # Service logging directory for local log storage
+    "d /var/log/services 0755 root root -"
+    "d /var/log/services/sonarr.shows 0755 sonarr.shows services -"
   ];
 }

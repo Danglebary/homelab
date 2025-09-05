@@ -17,5 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (loki manages internal structure)
     "d /var/lib/services/loki 0755 loki services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/loki 0755 loki services -"
   ];
 }

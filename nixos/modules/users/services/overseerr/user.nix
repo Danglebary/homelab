@@ -17,5 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (overseerr manages internal structure)
     "d /var/lib/services/overseerr 0755 overseerr services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/overseerr 0755 overseerr services -"
   ];
 }

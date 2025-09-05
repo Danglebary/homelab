@@ -17,5 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (grafana manages internal structure)
     "d /var/lib/services/grafana 0755 grafana services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/grafana 0755 grafana services -"
   ];
 }

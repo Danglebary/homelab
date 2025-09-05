@@ -17,5 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (prowlarr manages internal structure)
     "d /var/lib/services/prowlarr 0755 prowlarr services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/prowlarr 0755 prowlarr services -"
   ];
 }

@@ -17,5 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (alloy manages internal structure)
     "d /var/lib/services/alloy 0755 alloy services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/alloy 0755 alloy services -"
   ];
 }

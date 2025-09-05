@@ -1,0 +1,75 @@
+services:
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    restart: unless-stopped
+    
+    # Required capabilities and devices for VPN
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    
+    # Service identity (must match NixOS user)
+    user: "2006:3000"  # gluetun:services
+    
+    ports:
+      # Gluetun management and proxy ports
+      - "8000:8000/tcp"   # Built-in HTTP control server
+      - "8888:8888/tcp"   # HTTP proxy
+      - "8388:8388/tcp"   # Shadowsocks TCP
+      - "8388:8388/udp"   # Shadowsocks UDP
+      
+      # Ports for services that will route through this VPN
+      # These will be configured when we add dependent services
+    
+    volumes:
+      # Configuration and state persistence
+      - /var/lib/services/gluetun:/gluetun:rw
+      
+      # Logging
+      - /var/log/services/gluetun:/tmp/gluetun:rw
+    
+    environment:
+      # Load from .env file
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      
+      # VPN Provider Configuration
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
+      - OPENVPN_USER=${OPENVPN_USER}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      - SERVER_REGIONS=${SERVER_REGIONS}
+      
+      # Kill Switch & DNS
+      - FIREWALL_VPN_INPUT_PORTS=${FIREWALL_VPN_INPUT_PORTS}
+      - DNS_KEEP_NAMESERVER=${DNS_KEEP_NAMESERVER}
+      - DNS_ADDRESS=${DNS_ADDRESS}
+      
+      # HTTP Proxy
+      - HTTPPROXY=${HTTPPROXY}
+      - HTTPPROXY_LOG=${HTTPPROXY_LOG}
+      - HTTPPROXY_USER=${HTTPPROXY_USER}
+      - HTTPPROXY_PASSWORD=${HTTPPROXY_PASSWORD}
+      
+      # Health Check & Logging
+      - HEALTH_VPN_DURATION_INITIAL=${HEALTH_VPN_DURATION_INITIAL}
+      - LOG_LEVEL=${LOG_LEVEL}
+    
+    # Health check to ensure VPN is working
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://www.google.com/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Use bridge network (other containers will connect via network_mode: container:gluetun)
+    networks:
+      - default
+
+networks:
+  default:
+    name: homelab_network
+    external: false

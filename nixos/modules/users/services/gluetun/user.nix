@@ -17,5 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (gluetun manages internal structure)
     "d /var/lib/services/gluetun 0755 gluetun services -"
+    
+    # Service logging directory for local log storage
+    "d /var/log/services/gluetun 0755 gluetun services -"
   ];
 }

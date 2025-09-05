@@ -18,5 +18,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (sonarr manages internal structure)
     "d /var/lib/services/sonarr/anime 0755 sonarr.anime services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/sonarr 0755 sonarr services -"
   ];
 }

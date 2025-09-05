@@ -17,5 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (profilarr manages internal structure)
     "d /var/lib/services/profilarr 0755 profilarr services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/profilarr 0755 profilarr services -"
   ];
 }

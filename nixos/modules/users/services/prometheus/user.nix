@@ -17,5 +17,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (prometheus manages internal structure)
     "d /var/lib/services/prometheus 0755 prometheus services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/prometheus 0755 prometheus services -"
   ];
 }

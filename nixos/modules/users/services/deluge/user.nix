@@ -18,5 +18,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (deluge manages internal structure)
     "d /var/lib/services/deluge 0755 deluge services -"
+    
+    # Service logging directory for local log storage
+    "d /var/log/services/deluge 0755 deluge services -"
   ];
 }

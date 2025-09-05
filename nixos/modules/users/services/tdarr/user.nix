@@ -18,5 +18,8 @@
   systemd.tmpfiles.rules = [
     # Service runtime directory (tdarr manages internal structure)
     "d /var/lib/services/tdarr 0755 tdarr services -"
+
+    # Service logging directory for local log storage
+    "d /var/log/services/tdarr 0755 tdarr services -"
   ];
 }
