@@ -31,5 +31,11 @@ ensure-gluetun:
     ./scripts/ensure-service.sh gluetun services/gluetun
 
 # Self-hosting services
-ensure-immich:
+
+# Ensures Immich service is running, and if not, starts it
+immich-up:
     ./scripts/ensure-service.sh immich_server services/immich
+
+# Shuts down Immich service containers
+immich-down:
+    cd services/immich && docker compose down -v && cd ../../
