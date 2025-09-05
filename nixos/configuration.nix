@@ -6,9 +6,9 @@
       ./hardware-configuration.nix
       ./network.nix
       ./localization.nix
-      ./users/halfblown.nix
-      ./users/admin.nix
-      ./users/dev.nix
+      ./modules/users/halfblown.nix
+      ./modules/users/admin.nix
+      ./modules/users/dev.nix
       ./ssh.nix
       ./zfs.nix
       ./docker.nix

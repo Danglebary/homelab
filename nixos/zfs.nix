@@ -4,6 +4,7 @@
   # Enable ZFS support
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [ "vault" ];
+  boot.zfs.forceImportRoot = false;  # Safety: don't force import on boot issues
 
   # ZFS kernel module settings
   boot.kernelParams = [
@@ -29,19 +30,15 @@
     };
   };
 
-  # Mount vault pool
-  fileSystems."/mnt/vault" = {
-    device = "vault";
-    fsType = "zfs";
-    options = [ "zfsutil" ];
-  };
 
-  # Create basic directory structure (Phase 1)
+  # Create basic directory structure (matches ZFS dataset structure)
   systemd.tmpfiles.rules = [
-    # Main dataset directories
-    "d /mnt/vault/system 0755 root root -"
-    "d /mnt/vault/users 0755 root root -"
+    # Main dataset directories (from zfs.md documentation)
     "d /mnt/vault/media 0755 root root -"
+    "d /mnt/vault/users 0755 root root -"
     "d /mnt/vault/temp 0755 root root -"
+    "d /mnt/vault/telemetry 0755 root root -"
+    "d /mnt/vault/immich 0755 root root -"
+    "d /mnt/vault/nextcloud 0755 root root -"
   ];
 }
