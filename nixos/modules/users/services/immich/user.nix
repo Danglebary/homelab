@@ -24,14 +24,7 @@
     # Service logging directory for local log storage
     "d /var/log/services/immich 0755 1000 1000 -"
     
-    # Immich photo/video storage on ZFS (container needs write access)
+    # Immich photo/video storage on ZFS (container creates subdirectories as needed)
     "d /mnt/vault/immich 0755 1000 1000 -"
-    # Immich required subdirectories for system integrity checks
-    "d /mnt/vault/immich/upload 0755 1000 1000 -"
-    "d /mnt/vault/immich/library 0755 1000 1000 -"
-    "d /mnt/vault/immich/thumbs 0755 1000 1000 -"
-    "d /mnt/vault/immich/encoded-video 0755 1000 1000 -"
-    "d /mnt/vault/immich/profile 0755 1000 1000 -"
-    "d /mnt/vault/immich/backups 0755 1000 1000 -"
   ];
 }
