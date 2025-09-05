@@ -20,6 +20,10 @@ sys-up: sync-nixos
 sys-down:
     sudo nixos-rebuild switch --rollback
 
+# Force file structures to be created
+sys-fs-create:
+    sudo systemd-tmpfiles --create
+
 # Docker Service Management Commands
 
 # Infrastructure services (foundational)
