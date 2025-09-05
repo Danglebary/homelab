@@ -38,7 +38,6 @@
     "d /mnt/vault/users 0755 root root -"
     "d /mnt/vault/temp 0755 root root -"
     "d /mnt/vault/telemetry 0755 root root -"
-    "d /mnt/vault/immich 0755 root root -"
     "d /mnt/vault/nextcloud 0755 root root -"
   ];
 }

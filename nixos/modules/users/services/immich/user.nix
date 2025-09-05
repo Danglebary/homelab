@@ -23,5 +23,8 @@
 
     # Service logging directory for local log storage
     "d /var/log/services/immich 0775 immich services -"
+    
+    # Immich photo/video storage on ZFS (container needs write access)
+    "d /mnt/vault/immich 0775 immich services -"
   ];
 }
