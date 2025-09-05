@@ -21,6 +21,6 @@
     "d /var/lib/services/radarr/movies 0755 radarr.movies services -"
 
     # Service logging directory for local log storage
-    "d /var/log/services/radarr 0755 radarr services -"
+    "d /var/log/services/radarr/movies 0755 radarr.movies services -"
   ];
 }

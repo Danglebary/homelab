@@ -20,6 +20,6 @@
     "d /var/lib/services/sonarr/anime 0755 sonarr.anime services -"
 
     # Service logging directory for local log storage
-    "d /var/log/services/sonarr 0755 sonarr services -"
+    "d /var/log/services/sonarr/anime 0755 sonarr.anime services -"
   ];
 }

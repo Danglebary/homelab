@@ -20,6 +20,6 @@
     "d /var/lib/services/radarr/anime 0755 radarr.anime services -"
 
     # Service logging directory for local log storage
-    "d /var/log/services/radarr 0755 radarr services -"
+    "d /var/log/services/radarr/anime 0755 radarr.anime services -"
   ];
 }
