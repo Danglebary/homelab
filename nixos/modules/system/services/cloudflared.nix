@@ -21,7 +21,7 @@
       # Security settings
       NoNewPrivileges = true;
       ProtectSystem = "strict";
-      ProtectHome = true;
+      ProtectHome = "read-only";
       ReadWritePaths = "/home/admin/.cloudflared";
     };
   };
