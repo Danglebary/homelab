@@ -14,7 +14,7 @@
       Type = "simple";
       User = "admin";
       Group = "users";
-      ExecStart = "${pkgs.cloudflared}/bin/cloudflared tunnel run homelab-immich";
+      ExecStart = "${pkgs.cloudflared}/bin/cloudflared tunnel --config /home/admin/.cloudflared/config.yml run homelab-immich";
       Restart = "always";
       RestartSec = 10;
       

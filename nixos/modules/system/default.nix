@@ -6,9 +6,9 @@
 {
   imports = [
     # Service-specific system configurations
-    ./directories/immich.nix
+    ./directories
     ./network
-    ./services/cloudflared.nix
+    ./services
     
     # Future system modules can be added here:
     # ./directories  # When we have more directory modules
