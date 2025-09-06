@@ -12,7 +12,7 @@
     "d /var/lib/services/immich 0755 root root -"
     "d /var/lib/services/immich/ml-cache 0755 root root -"
     
-    # Immich photo/video storage on ZFS
-    "d /mnt/vault/immich 0755 root root -"
+    # Immich photo/video storage on ZFS (needs write access for container)
+    "d /mnt/vault/immich 0775 root root -"
   ];
 }
