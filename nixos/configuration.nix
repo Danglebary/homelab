@@ -4,7 +4,6 @@
   imports =
     [
       ./hardware-configuration.nix
-      ./network.nix
       ./localization.nix
       ./modules/users/halfblown.nix
       ./modules/users/admin.nix

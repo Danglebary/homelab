@@ -32,6 +32,7 @@
     ./users/services/prometheus/user.nix
     ./users/services/grafana/user.nix
     ./system/directories/immich.nix
+    ./system/network
     ./users/services/nextcloud/user.nix
   ];
 }

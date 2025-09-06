@@ -1,6 +1,16 @@
+# Network Configuration Module
+# Imports all network-related configurations including global settings and service-specific rules
+
 { config, lib, pkgs, ... }:
 
 {
+  imports = [
+    # Service-specific network configurations
+    ./immich.nix
+  ];
+
+  # Global network configuration
+  
   # Set our hostname
   networking.hostName = "homelab-hl15";
   
