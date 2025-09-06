@@ -8,10 +8,10 @@
     # Service-specific system configurations
     ./directories/immich.nix
     ./network
+    ./services/cloudflared.nix
     
     # Future system modules can be added here:
     # ./directories  # When we have more directory modules
-    # ./services     # For systemd service definitions
     # ./security     # For security policies
   ];
 }
