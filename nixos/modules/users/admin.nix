@@ -6,16 +6,10 @@
     isNormalUser = true;
     description = "Homelab Administrator";
     uid = 1001;
-    extraGroups = [ 
+    extraGroups = [
       "wheel"           # Sudo access
       "docker"          # Docker daemon access
-      "services"        # Base service group
-      "anime"           # Anime media access
-      "shows"           # TV shows media access  
-      "movies"          # Movies media access
-      "downloads"       # Download processing access
-      "transcoding"     # Transcoding processing access
-      "cleanup"         # Maintenance cleanup access
+      "service"         # Service group access
       "systemd-journal" # System log access
     ];
     packages = with pkgs; [
@@ -28,6 +22,7 @@
       curl              # HTTP client
       wget              # File downloading
       vim               # Text editor
+      gh                # GitHub CLI
     ];
     shell = pkgs.bash;  # Default shell
   };

@@ -1,75 +1,55 @@
+name: gluetun
+
 services:
   gluetun:
-    image: qmcgaw/gluetun:latest
     container_name: gluetun
+    image: qmcgaw/gluetun:latest
     restart: unless-stopped
-    
-    # Required capabilities and devices for VPN
+
+    # VPN requires special capabilities
     cap_add:
       - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    
-    # Service identity (must match NixOS user)
-    user: "2006:3000"  # gluetun:services
-    
+
+    # Expose ports for services that will use this VPN container
     ports:
-      # Gluetun management and proxy ports
-      - "8000:8000/tcp"   # Built-in HTTP control server
-      - "8888:8888/tcp"   # HTTP proxy
-      - "8388:8388/tcp"   # Shadowsocks TCP
-      - "8388:8388/udp"   # Shadowsocks UDP
-      
-      # Ports for services that will route through this VPN
-      # These will be configured when we add dependent services
-    
+      - "8112:8112"  # Deluge WebUI
+      - "58846:58846"  # Deluge daemon
+      - "9696:9696"  # Prowlarr (if routing through VPN)
+
     volumes:
-      # Configuration and state persistence
       - /var/lib/services/gluetun:/gluetun:rw
-      
-      # Logging
-      - /var/log/services/gluetun:/tmp/gluetun:rw
-    
+
     environment:
-      # Load from .env file
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-      
       # VPN Provider Configuration
-      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-      - OPENVPN_USER=${OPENVPN_USER}
-      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-      - SERVER_REGIONS=${SERVER_REGIONS}
-      
-      # Kill Switch & DNS
-      - FIREWALL_VPN_INPUT_PORTS=${FIREWALL_VPN_INPUT_PORTS}
-      - DNS_KEEP_NAMESERVER=${DNS_KEEP_NAMESERVER}
-      - DNS_ADDRESS=${DNS_ADDRESS}
-      
-      # HTTP Proxy
-      - HTTPPROXY=${HTTPPROXY}
-      - HTTPPROXY_LOG=${HTTPPROXY_LOG}
-      - HTTPPROXY_USER=${HTTPPROXY_USER}
-      - HTTPPROXY_PASSWORD=${HTTPPROXY_PASSWORD}
-      
-      # Health Check & Logging
-      - HEALTH_VPN_DURATION_INITIAL=${HEALTH_VPN_DURATION_INITIAL}
-      - LOG_LEVEL=${LOG_LEVEL}
-    
-    # Health check to ensure VPN is working
+      - VPN_SERVICE_PROVIDER=private internet access
+      - VPN_TYPE=openvpn
+      - OPENVPN_USER=${PIA_USERNAME}
+      - OPENVPN_PASSWORD=${PIA_PASSWORD}
+      - SERVER_REGIONS=${VPN_REGION:-US West}
+
+      # Security: Kill switch (block traffic if VPN disconnects)
+      - FIREWALL_VPN_INPUT_PORTS=${FIREWALL_VPN_INPUT_PORTS:-}
+      - FIREWALL_INPUT_PORTS=${FIREWALL_INPUT_PORTS:-}
+      - FIREWALL_OUTBOUND_SUBNETS=${FIREWALL_OUTBOUND_SUBNETS:-192.168.68.0/24}
+
+      # Timezone
+      - TZ=${TZ:-America/Los_Angeles}
+
+      # Health check server
+      - HEALTH_SERVER_ADDRESS=:9999
+
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://www.google.com/"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9999"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
-    
-    # Use bridge network (other containers will connect via network_mode: container:gluetun)
-    networks:
-      - default
+
+    sysctls:
+      # Required for some VPN providers
+      - net.ipv4.conf.all.src_valid_mark=1
 
 networks:
   default:
-    name: homelab_network
+    name: gluetun_network
     external: false

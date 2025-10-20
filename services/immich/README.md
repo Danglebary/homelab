@@ -7,8 +7,7 @@
 - **Instance**: N/A - single instance
 
 ## Service Configuration
-- **Service User**: `immich` (PUID: 2050)
-- **Domain Groups**: `services` (GID: 3000)
+- **User/Group**: `root` (containers run as root for compatibility with Immich's internal user management)
 - **Dependencies**: None (self-contained with PostgreSQL and Redis)
 - **Pipeline Stage**: N/A - standalone service
 
@@ -20,20 +19,16 @@
 
 ## Environment Variables
 ```bash
-# Service Identity (universal)
-PUID=2050
-PGID=3000
+# Timezone
 TZ=America/Los_Angeles
 
-# Immich Configuration
+# Immich Application
 IMMICH_VERSION=release
+
+# Database Configuration
 DB_PASSWORD=secure_database_password_here
 DB_USERNAME=postgres
 DB_DATABASE_NAME=immich
-
-# Storage Paths (container perspective - mapped to host paths)
-UPLOAD_LOCATION=/usr/src/app/upload    # Maps to /mnt/vault/immich/
-DB_DATA_LOCATION=/var/lib/postgresql/data  # Maps to /var/lib/services/immich/postgres/
 ```
 
 ## Storage Access

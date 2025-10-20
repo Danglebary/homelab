@@ -7,8 +7,7 @@
 - **Instance**: [shows/anime/movies] (for multi-instance services like Sonarr/Radarr)
 
 ## Service Configuration
-- **Service User**: `[service-user-name]` (PUID: [uid])
-- **Domain Groups**: List groups this service belongs to (affects storage access)
+- **User/Group**: `service:service` (UID: 2000, GID: 3000) OR `root` (if container requires root privileges)
 - **Dependencies**: Services this depends on for startup
 - **Pipeline Stage**: [request/search/download/transcode/import/serve] (media services only)
 
@@ -20,9 +19,7 @@
 
 ## Environment Variables
 ```bash
-# Service Identity (universal)
-PUID=[service-uid]
-PGID=[primary-group-gid]  
+# Timezone
 TZ=America/Los_Angeles
 
 # Service-Specific Configuration

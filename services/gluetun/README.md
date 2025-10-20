@@ -1,69 +1,94 @@
 # Gluetun VPN Gateway
 
 ## Service Overview
-- **Purpose**: VPN gateway with kill-switch protection for isolated torrent traffic
+- **Purpose**: VPN client container that routes other containers' traffic through VPN tunnel
 - **Category**: infrastructure
-- **External Access**: No - internal service only
+- **External Access**: No (internal infrastructure only)
 - **Instance**: N/A - single instance
 
 ## Service Configuration
-- **Service User**: `gluetun` (PUID: 2006)
-- **Domain Groups**: `services` (GID: 3000)
-- **Dependencies**: None (foundational infrastructure service)
+- **User/Group**: `root` (requires NET_ADMIN capability for network interface management)
+- **Dependencies**: None (foundation for VPN-dependent services)
 - **Pipeline Stage**: N/A - infrastructure service
 
 ## Container Settings
-**Ports**: 8388 (HTTP proxy), 8888 (Shadowsocks), plus forwarded ports for dependent services
-**Resources**: 0.5-1.0 CPU, 256-512MB RAM
-**Network**: bridge (creates VPN-isolated network for other containers)
-**Special Requirements**: Privileged mode for network management, NET_ADMIN capability
+**Ports**: 8112 (Deluge WebUI), 58846 (Deluge daemon), 9696 (Prowlarr), 9999 (health check)
+**Resources**: Minimal - <1 CPU core, ~64MB RAM
+**Network**: bridge (creates isolated network for VPN-routed services)
+**Special Requirements**: `CAP_NET_ADMIN` capability for VPN tunnel management
 
 ## Environment Variables
 ```bash
-# Service Identity (universal)
-PUID=2006
-PGID=3000
+# Timezone
 TZ=America/Los_Angeles
 
-# VPN Provider Configuration
-VPN_SERVICE_PROVIDER=private internet access
-OPENVPN_USER=
-OPENVPN_PASSWORD=
-SERVER_REGIONS=US East
+# VPN Provider (Private Internet Access)
+PIA_USERNAME=your_pia_username
+PIA_PASSWORD=your_pia_password
+VPN_REGION=US East
 
-# Kill Switch & DNS
-FIREWALL_VPN_INPUT_PORTS=
-DNS_KEEP_NAMESERVER=off
-DNS_ADDRESS=1.1.1.1
-
-# HTTP Proxy Configuration
-HTTPPROXY=on
-HTTPPROXY_LOG=on
-HTTPPROXY_USER=
-HTTPPROXY_PASSWORD=
-
-# Health Check & Logging
-HEALTH_VPN_DURATION_INITIAL=6s
-LOG_LEVEL=info
+# Firewall Configuration
+FIREWALL_OUTBOUND_SUBNETS=192.168.68.0/24
 ```
 
 ## Storage Access
-**Read/Write Access**: `/var/lib/services/gluetun/` (VPN configuration and state files)
+**Read/Write Access**: `/var/lib/services/gluetun/` (VPN state and configuration)
 **Read-Only Access**: None
 
 ## Health Check
-**Startup**: Container logs show "VPN is up" and external IP shows VPN provider's IP
-**Runtime**: `curl --proxy http://gluetun:8888 https://ipinfo.io` should show VPN IP, not home IP  
-**Common Issues**: 
-- VPN credentials incorrect - check OPENVPN_USER and OPENVPN_PASSWORD
-- Kill-switch blocking traffic - verify FIREWALL_VPN_INPUT_PORTS includes required ports for dependent services
-- DNS resolution failing - ensure DNS_ADDRESS is accessible through VPN
-- Container startup fails - check /dev/net/tun device is available and NET_ADMIN capability granted
+**Startup**:
+- Container logs show "VPN is up and running"
+- Health check endpoint responds at `http://server-ip:9999`
+- Check public IP via: `docker exec gluetun wget -qO- ifconfig.me`
+
+**Runtime**:
+- VPN connection remains stable (no reconnection loops in logs)
+- Services using this network can access the internet
+- Kill-switch is active (traffic blocked if VPN disconnects)
+
+**Common Issues**:
+- **Authentication failures**: Verify PIA_USERNAME and PIA_PASSWORD in .env
+- **Connection timeouts**: Try different VPN_REGION (some regions may be congested)
+- **Local network not accessible**: Check FIREWALL_OUTBOUND_SUBNETS matches your network (run `ip addr` to verify)
+- **Services can't connect**: Ensure other containers use `network_mode: "container:gluetun"`
+
+## Using Gluetun with Other Services
+
+To route a service through the Gluetun VPN tunnel:
+
+1. **Remove the service's `ports` section** (ports are exposed via Gluetun instead)
+2. **Add ports to Gluetun's compose.yml** (see ports section above)
+3. **Set network mode** in the service's compose.yml:
+   ```yaml
+   services:
+     deluge:
+       network_mode: "container:gluetun"
+       depends_on:
+         - gluetun
+   ```
+
+## Verifying VPN Connection
+
+Check that traffic is routed through VPN:
+```bash
+# Check Gluetun's public IP (should be VPN server IP)
+docker exec gluetun wget -qO- ifconfig.me
+
+# Check a service using Gluetun (should match Gluetun's IP)
+docker exec deluge wget -qO- ifconfig.me
+
+# Your actual server IP (should be different from above)
+wget -qO- ifconfig.me
+```
+
+All three IPs should be different:
+- Gluetun: VPN provider's IP
+- Service (Deluge): Same as Gluetun (using VPN)
+- Host server: Your actual ISP IP
 
 ## Notes
-- All containers using `network_mode: "container:gluetun"` will route through VPN
-- If Gluetun stops, dependent containers lose network access (kill-switch protection)
-- HTTP proxy on port 8888 allows testing VPN connection from other containers
-- PIA port forwarding has limitations - works mainly for P2P applications
-- Uses OpenVPN (WireGuard requires custom configuration with PIA)
-- Health check verifies internet connectivity through VPN tunnel
+- **Kill-switch enabled**: If VPN disconnects, all traffic through Gluetun is blocked (prevents IP leaks)
+- **Port forwarding**: PIA supports port forwarding for improved torrent performance (configure if needed)
+- **Region selection**: Choose geographically close regions for better performance
+- **Health monitoring**: Use health check endpoint for automated monitoring/alerting
+- **Multiple services**: Multiple containers can share the same Gluetun instance via `network_mode`

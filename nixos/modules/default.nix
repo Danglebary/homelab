@@ -10,8 +10,8 @@
     ./users/admin.nix
     ./users/dev.nix
     ./users/halfblown.nix
-    ./users/services
-    
+    ./users/service.nix
+
     # System-level configurations
     ./system
   ];
