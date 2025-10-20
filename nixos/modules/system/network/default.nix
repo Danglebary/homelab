@@ -24,8 +24,25 @@
   # Override DHCP settings from hardware-configuration.nix
   networking.useDHCP = false;
 
-  # Allow TCP port 22 to enable SSH
-  networking.firewall.allowedTCPPorts = [ 22 ];
+  # Firewall configuration
+  networking.firewall = {
+    # Allow inbound TCP ports
+    allowedTCPPorts = [
+      22    # SSH
+      2283  # Immich
+    ];
+
+    # Trust Docker interfaces (rootless Docker uses slirp4netns)
+    # This allows Docker containers to make outbound connections
+    trustedInterfaces = [ "docker0" "br-+" ];
+
+    # Allow forwarding for Docker (required for container networking)
+    extraCommands = ''
+      # Allow Docker containers to access the internet
+      iptables -A FORWARD -i docker+ -j ACCEPT
+      iptables -A FORWARD -o docker+ -j ACCEPT
+    '';
+  };
 
   # Enable networking
   systemd.network.enable = true;
