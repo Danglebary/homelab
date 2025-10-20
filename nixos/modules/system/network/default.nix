@@ -21,6 +21,10 @@
   networking.useNetworkd = true;
   networking.networkmanager.enable = false;
 
+  # Disable systemd-resolved (causes Docker DNS issues)
+  # Use static DNS configuration instead
+  services.resolved.enable = false;
+
   # Override DHCP settings from hardware-configuration.nix
   networking.useDHCP = false;
 
