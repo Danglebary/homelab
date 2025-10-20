@@ -2,6 +2,7 @@
 
 {
   imports = [
+    ./gluetun.nix
     ./immich.nix
   ];
 }

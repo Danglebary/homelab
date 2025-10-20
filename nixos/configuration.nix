@@ -11,6 +11,7 @@
       ./ssh.nix
       ./zfs.nix
       ./docker.nix
+      ./kernel.nix
       ./modules/default.nix
     ];
 

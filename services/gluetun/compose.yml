@@ -5,10 +5,13 @@ services:
     container_name: gluetun
     image: qmcgaw/gluetun:latest
     restart: unless-stopped
+    user: "0:0"  # Run as root (required for VPN operations)
 
-    # VPN requires special capabilities
+    # VPN requires special capabilities and devices
     cap_add:
       - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
 
     # Expose ports for services that will use this VPN container
     ports:
