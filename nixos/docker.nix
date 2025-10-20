@@ -4,9 +4,7 @@
     enable = true;
     enableOnBoot = true;
 
-    rootless = {
-    enable = true;
-    setSocketVariable = true;
-    };
+    # Use rootful Docker for homelab (better networking, performance)
+    # Rootless disabled - this is a single-user server, not a shared system
   };
 }

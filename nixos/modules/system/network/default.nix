@@ -26,19 +26,17 @@
 
   # Firewall configuration
   networking.firewall = {
-    # Allow inbound TCP ports
+    # Allow inbound TCP ports (SSH only - services managed in ./service-name.nix)
     allowedTCPPorts = [
       22    # SSH
-      2283  # Immich
     ];
 
-    # Trust Docker interfaces (rootless Docker uses slirp4netns)
-    # This allows Docker containers to make outbound connections
+    # Trust Docker bridge interfaces for container networking
     trustedInterfaces = [ "docker0" "br-+" ];
 
-    # Allow forwarding for Docker (required for container networking)
+    # Allow traffic forwarding for Docker containers
+    # Required for containers to reach internet and for inter-container communication
     extraCommands = ''
-      # Allow Docker containers to access the internet
       iptables -A FORWARD -i docker+ -j ACCEPT
       iptables -A FORWARD -o docker+ -j ACCEPT
     '';
