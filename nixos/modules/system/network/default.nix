@@ -25,6 +25,9 @@
   # Use static DNS configuration instead
   services.resolved.enable = false;
 
+  # Set static DNS servers for the system
+  networking.nameservers = [ "192.168.68.1" "1.1.1.1" "1.0.0.1" ];
+
   # Override DHCP settings from hardware-configuration.nix
   networking.useDHCP = false;
 
