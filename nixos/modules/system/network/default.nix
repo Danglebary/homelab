@@ -21,12 +21,17 @@
   networking.useNetworkd = true;
   networking.networkmanager.enable = false;
 
-  # Disable systemd-resolved (causes Docker DNS issues)
-  # Use static DNS configuration instead
-  services.resolved.enable = false;
-
-  # Set static DNS servers for the system
-  networking.nameservers = [ "192.168.68.1" "1.1.1.1" "1.0.0.1" ];
+  # Enable systemd-resolved for proper DNS with systemd-networkd
+  services.resolved = {
+    enable = true;
+    # Disable LLMNR and mDNS (not needed for server)
+    llmnr = "false";
+    extraConfig = ''
+      MulticastDNS=false
+    '';
+    # Fallback DNS servers if network config DNS fails
+    fallbackDns = [ "1.1.1.1" "1.0.0.1" ];
+  };
 
   # Override DHCP settings from hardware-configuration.nix
   networking.useDHCP = false;
@@ -70,7 +75,11 @@
       matchConfig.Name = "bond0";
       address = [ "192.168.68.100/24" ];
       gateway = [ "192.168.68.1" ];
-      dns = [ "192.168.68.1" ];
+
+      # DNS configuration - must be in networkConfig for systemd-networkd
+      networkConfig = {
+        DNS = "192.168.68.1 1.1.1.1 1.0.0.1";
+      };
     };
 
     "20-eno1" = {

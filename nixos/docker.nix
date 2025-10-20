@@ -12,8 +12,12 @@
       # Use Cloudflare DNS for containers (reliable, fast)
       dns = [ "1.1.1.1" "1.0.0.1" ];
 
-      # Fallback to Google DNS if Cloudflare is unavailable
-      # dns = [ "8.8.8.8" "8.8.4.4" ];
+      # Prevent Docker from auto-detecting and using wrong resolver
+      # Force it to use our explicit DNS settings
+      iptables = true;
+
+      # Use default bridge network with our DNS
+      bridge = "docker0";
     };
   };
 }
