@@ -20,7 +20,7 @@ services:
       - "9696:9696"  # Prowlarr (if routing through VPN)
 
     volumes:
-      - /var/lib/services/gluetun:/gluetun:rw
+      - ./data:/gluetun:rw
 
     environment:
       # VPN Provider Configuration

@@ -32,7 +32,7 @@ FIREWALL_OUTBOUND_SUBNETS=192.168.68.0/24
 ```
 
 ## Storage Access
-**Read/Write Access**: `/var/lib/services/gluetun/` (VPN state and configuration)
+**Read/Write Access**: `./data/` (VPN state and server list cache, relative to compose file)
 **Read-Only Access**: None
 
 ## Health Check

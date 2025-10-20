@@ -29,6 +29,10 @@ Thumbs.db
 .env
 .env.local
 
+# Docker service data directories
+services/*/data/
+services/**/data/
+
 # Backup files
 *.backup
 *.bak
