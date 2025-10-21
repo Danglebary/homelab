@@ -42,7 +42,7 @@ services:
       - HEALTH_SERVER_ADDRESS=:9999
 
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:9999"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--timeout=5", "-O", "/dev/null", "http://127.0.0.1:9999"]
       interval: 30s
       timeout: 10s
       retries: 5
