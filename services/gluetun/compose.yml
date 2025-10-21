@@ -42,11 +42,11 @@ services:
       - HEALTH_SERVER_ADDRESS=:9999
 
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--timeout=5", "-O", "/dev/null", "http://127.0.0.1:9999"]
+      test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 60s
+      retries: 3
+      start_period: 30s
 
     sysctls:
       # Required for some VPN providers
