@@ -23,6 +23,7 @@
       wget              # File downloading
       vim               # Text editor
       gh                # GitHub CLI
+      jq                # JSON processor
     ];
     shell = pkgs.bash;  # Default shell
   };
