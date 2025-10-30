@@ -6,7 +6,7 @@
 
     # Define exports
     services.nfs.server.exports = ''
-      /mnt/vault 192.168.68.0/24(rw,sync,no_subtree_check,all_squash,anonuid=1001,anongid=3000,insecure)
+      /mnt/vault 192.168.68.0/24(rw,sync,no_subtree_check,all_squash,anonuid=1001,anongid=3000,insecure,no_root_squash)
     '';
 
     # Open firewall for NFS
