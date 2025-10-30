@@ -234,7 +234,7 @@ Comprehensive inventory of all Docker services planned for the HL15 homelab serv
 ### Complete Workflow
 1. **User Request**: Overseerr → Sonarr/Sonarr-Anime/Radarr
 2. **Content Discovery**: Sonarr/Sonarr-Anime/Radarr → Prowlarr → Indexers
-3. **Download**: Sonarr/Sonarr-Anime/Radarr → Deluge (via VPN)
+3. **Download**: Sonarr/Sonarr-Anime/Radarr → Deluge (via VPN) (downloads to `mnt/vault/temp/downloads/pending/`)
 4. **File Movement**: Deluge → `/mnt/vault/temp/downloads/completed/`
 5. **Transcoding**: Tdarr monitors completed downloads → transcodes → `/mnt/vault/temp/transcoded/`
 6. **Import**: Sonarr/Sonarr-Anime/Radarr monitors transcoded directory → moves to final media location

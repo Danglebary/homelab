@@ -31,13 +31,9 @@
   };
 
 
-  # Create basic directory structure (main dataset directories only)
   systemd.tmpfiles.rules = [
-    # Main dataset directories - service-specific subdirectories created by service modules
-    "d /mnt/vault/media 0755 root root -"
-    "d /mnt/vault/users 0755 root root -"
-    "d /mnt/vault/temp 0755 root root -"
-    "d /mnt/vault/telemetry 0755 root root -"
-    "d /mnt/vault/nextcloud 0755 root root -"
+    "d /mnt/vault/media 0755 service service -"
+    "d /mnt/vault/users 0755 admin service -"
+    "d /mnt/vault/temp 0755 service service -"
   ];
 }

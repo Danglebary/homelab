@@ -5,26 +5,25 @@ services:
     container_name: gluetun
     image: qmcgaw/gluetun:latest
     restart: unless-stopped
-    user: "0:0"  # Run as root (required for VPN operations)
 
-    # VPN requires special capabilities and devices
+    # Run as root, gluetun will drop to non-root user after startup
+    user: "0:0"
+
     cap_add:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
 
-    # Expose ports for services that will use this VPN container
     ports:
-      - "8112:8112"  # Deluge WebUI
-      - "58846:58846"  # Deluge daemon
-      - "9696:9696"  # Prowlarr (if routing through VPN)
+      - "8112:8112" # Deluge WebUI
+      - "58846:58846" # Deluge daemon
 
     volumes:
       - ./data:/gluetun:rw
 
     environment:
       # VPN Provider Configuration
-      - VPN_SERVICE_PROVIDER=private internet access
+      - VPN_SERVICE_PROVIDER=private inter access
       - VPN_TYPE=openvpn
       - OPENVPN_USER=${PIA_USERNAME}
       - OPENVPN_PASSWORD=${PIA_PASSWORD}
@@ -35,10 +34,8 @@ services:
       - FIREWALL_INPUT_PORTS=${FIREWALL_INPUT_PORTS:-}
       - FIREWALL_OUTBOUND_SUBNETS=${FIREWALL_OUTBOUND_SUBNETS:-192.168.68.0/24}
 
-      # Timezone
       - TZ=${TZ:-America/Los_Angeles}
 
-      # Health check server
       - HEALTH_SERVER_ADDRESS=:9999
 
     healthcheck:

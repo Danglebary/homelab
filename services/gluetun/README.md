@@ -12,10 +12,13 @@
 - **Pipeline Stage**: N/A - infrastructure service
 
 ## Container Settings
-**Ports**: 8112 (Deluge WebUI), 58846 (Deluge daemon), 9696 (Prowlarr), 9999 (health check)
+**Ports**: 8112 (Deluge WebUI), 58846 (Deluge daemon), 9696 (Prowlarr)
 **Resources**: Minimal - <1 CPU core, ~64MB RAM
 **Network**: bridge (creates isolated network for VPN-routed services)
-**Special Requirements**: `CAP_NET_ADMIN` capability for VPN tunnel management
+**Special Requirements**:
+- `CAP_NET_ADMIN` capability for VPN tunnel management
+- `/dev/net/tun` device access (TUN/TAP kernel module)
+- Runs as root (`user: "0:0"`) for VPN operations
 
 ## Environment Variables
 ```bash
@@ -25,7 +28,7 @@ TZ=America/Los_Angeles
 # VPN Provider (Private Internet Access)
 PIA_USERNAME=your_pia_username
 PIA_PASSWORD=your_pia_password
-VPN_REGION=US East
+VPN_REGION=US West
 
 # Firewall Configuration
 FIREWALL_OUTBOUND_SUBNETS=192.168.68.0/24
@@ -36,12 +39,20 @@ FIREWALL_OUTBOUND_SUBNETS=192.168.68.0/24
 **Read-Only Access**: None
 
 ## Health Check
-**Startup**:
-- Container logs show "VPN is up and running"
-- Health check endpoint responds at `http://server-ip:9999`
+Gluetun includes a built-in health check system that monitors VPN connectivity.
+
+**How it works**:
+- Internal health server listens on port 9999 (container-internal only)
+- Docker healthcheck uses `/gluetun-entrypoint healthcheck` command
+- Checks connectivity to `cloudflare.com:443` by default
+- Container marked as "healthy" once VPN is connected and stable
+
+**Startup verification**:
+- Container logs show "Initialization Sequence Completed"
+- Docker status shows "healthy" after ~30 seconds: `docker ps`
 - Check public IP via: `docker exec gluetun wget -qO- ifconfig.me`
 
-**Runtime**:
+**Runtime monitoring**:
 - VPN connection remains stable (no reconnection loops in logs)
 - Services using this network can access the internet
 - Kill-switch is active (traffic blocked if VPN disconnects)

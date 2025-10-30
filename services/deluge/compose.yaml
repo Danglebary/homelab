@@ -1,0 +1,21 @@
+name: Deluge
+
+services:
+  deluge:
+    image: lscr.io/linuxserver/deluge:latest
+    container_name: deluge
+    restart: unless-stopped
+
+    depends_on:
+      - gluetun
+    network_mode: "container:gluetun"
+
+    volumes:
+      - ./config:/config
+      - /mnt/vault/temp/downloads:/downloads
+
+    environment:
+      - PUID=2000
+      - PGID=3000
+      - TZ=America/Los_Angeles
+      - DELUGE_LOGLEVEL=warn

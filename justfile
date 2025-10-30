@@ -26,16 +26,32 @@ sys-fs-create:
 
 # Docker Service Management Commands
 
-# Infrastructure services (foundational)
-ensure-gluetun:
-    ./scripts/ensure-service.sh gluetun services/gluetun
+# Start/stop all Docker services
+docker-up:
+    just gluetun-up
+    just immich-up
+    just plex-up
+docker-down:
+    just immich-down
+    just gluetun-down
+    just plex-down
+
+# Infrastructure services
+gluetun-up:
+    ./scripts/start-service.sh gluetun
+gluetun-down:
+    ./scripts/stop-service.sh gluetun
 
 # Self-hosting services
 
-# Ensures Immich service is running, and if not, starts it
 immich-up:
-    ./scripts/ensure-service.sh immich_server services/immich
-
-# Shuts down Immich service containers
+    ./scripts/start-service.sh immich
 immich-down:
-    cd services/immich && docker compose down -v && cd ../../
+    ./scripts/stop-service.sh immich
+
+# Media services
+
+plex-up:
+    ./scripts/start-service.sh plex
+plex-down:
+    ./scripts/stop-service.sh plex

@@ -3,5 +3,6 @@
 {
   imports = [
     ./cloudflared.nix
+    ./nfs-server.nix
   ];
 }
