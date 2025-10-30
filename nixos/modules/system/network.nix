@@ -37,6 +37,7 @@
         allowedTCPPorts = [
             22    # SSH
             2283  # Immich
+            32400 # Plex
         ];
 
         # Trust Docker bridge interfaces for container networking
