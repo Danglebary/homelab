@@ -10,6 +10,6 @@
     '';
 
     # Open firewall for NFS
-    networking.firewall.allowedTCPPorts = [ 2049 ];
-    networking.firewall.allowedUDPPorts = [ 2049 ];
+    networking.firewall.allowedTCPPorts = [ 111 2049 20048 ];
+    networking.firewall.allowedUDPPorts = [ 111 2049 20048 ];
 }
