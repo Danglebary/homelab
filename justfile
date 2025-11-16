@@ -60,4 +60,4 @@ plex-down:
 actual-up:
     ./scripts/start-service.sh actual_budget
 actual-down:
-    ./scripts/start-service.sh actual_budget
+    ./scripts/stop-service.sh actual_budget
