@@ -10,7 +10,7 @@
         "d /mnt/vault/immich 2775 service service -"
 
         # Actual - budgeting app server
-        "d /mnt/vault/services/actual_budget 2775 service service -"
+        "d /mnt/vault/services/actual 2775 service service -"
 
         # Plex - runtime directories
         "d /var/lib/services/plex 2775 service service -"
