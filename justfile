@@ -55,3 +55,9 @@ plex-up:
     ./scripts/start-service.sh plex
 plex-down:
     ./scripts/stop-service.sh plex
+
+# Actual Budget Sync Server
+actual-up:
+    ./scripts/start-service.sh actual_budget
+actual-down:
+    ./scripts/start-service.sh actual_budget
