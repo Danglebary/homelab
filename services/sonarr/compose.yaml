@@ -1,0 +1,18 @@
+services:
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    restart: unless-stopped
+    network_mode: host
+
+    environment:
+      - PUID=2000
+      - PGID=3000
+      - TZ=America/Los_Angeles
+
+    volumes:
+      - /var/lib/services/sonarr:/config
+      - /mnt/vault/media/shows:/shows
+      - /mnt/vault/media/anime:/anime
+      - /mnt/vault/downloads/complete/shows:/downloads/shows
+      - /mnt/vault/downloads/complete/anime:/downloads/anime

@@ -17,13 +17,14 @@ services:
     ports:
       - "8112:8112" # Deluge WebUI
       - "58846:58846" # Deluge daemon
+      - "5001:9696/tcp" # Prowlarr
 
     volumes:
       - ./data:/gluetun:rw
 
     environment:
       # VPN Provider Configuration
-      - VPN_SERVICE_PROVIDER=private inter access
+      - VPN_SERVICE_PROVIDER="private internet access"
       - VPN_TYPE=openvpn
       - OPENVPN_USER=${PIA_USERNAME}
       - OPENVPN_PASSWORD=${PIA_PASSWORD}

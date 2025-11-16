@@ -1,0 +1,32 @@
+services:
+  tdarr_server:
+    image: ghcr.io/haveagitgat/tdarr:latest
+    container_name: tdarr
+    restart: unless-stopped
+    network_mode: host
+
+    environment:
+      - PUID=2000
+      - PGID=3000
+      - TZ=America/Los_Angeles
+
+    volumes:
+      - /var/lib/services/tdarr:/appdata
+      - /mnt/vault/media:/media # Watch media only
+      - /mnt/vault/tdarr-cache:/temp # Temporary transcoding cache
+
+  tdarr_node:
+    image: ghcr.io/haveagitgat/tdarr_node:latest
+    container_name: tdarr_node
+    restart: unless-stopped
+    network_mode: host
+
+    environment:
+      - PUID=2000
+      - PGID=3000
+      - TZ=America/Los_Angeles
+
+    volumes:
+      - /var/lib/services/tdarr:/appdata
+      - /mnt/vault/media:/media
+      - /mnt/vault/tdarr-cache:/temp

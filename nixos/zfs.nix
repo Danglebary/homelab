@@ -32,8 +32,8 @@
 
 
   systemd.tmpfiles.rules = [
-    "d /mnt/vault/media 0755 service service -"
-    "d /mnt/vault/users 0755 admin service -"
-    "d /mnt/vault/temp 0755 service service -"
+    "d /mnt/vault/media 2775 service service -"
+    "d /mnt/vault/users 2775 admin service -"
+    "d /mnt/vault/temp 2775 service service -"
   ];
 }
