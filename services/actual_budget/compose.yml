@@ -9,4 +9,4 @@ services:
     ports:
       - "5006:5006"
     volumes:
-      - /mnt/vault/services/actual_budget:/data
+      - /mnt/vault/services/actual:/data
