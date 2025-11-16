@@ -2,9 +2,6 @@
 
 {
     systemd.tmpfiles.rules = [
-        # Vault Services parent directory
-        "d /mnt/vault/services 2775 service service -"
-
         # Immich - runtime directories
         "d /var/lib/services/immich 2775 service service -"
         "d /var/lib/services/immich/ml-cache 2775 service service -"
@@ -26,11 +23,9 @@
         "d /mnt/vault/media/movies 2775 service service -"
         "d /mnt/vault/media/shows 2775 service service -"
 
-        # Processing directories (deluge, Tdarr, etc.)
-        "d /mnt/vault/downloads 2775 service service -"
 
+        # Download directories (for deluge)
         "d /mnt/vault/downloads/incomplete 2775 service service -"
-
         "d /mnt/vault/downloads/complete 2775 service service -"
         "d /mnt/vault/downloads/complete/anime 2775 service service -"
         "d /mnt/vault/downloads/complete/movies 2775 service service -"
