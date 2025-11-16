@@ -3,7 +3,7 @@ name: actual_budget
 services:
   actual:
     container_name: actual_budget
-    image: actual-budget/actual:latest
+    image: actualbudget/actual-server:latest
     user: "2000:3000"
     restart: unless-stopped
     ports:
