@@ -2,6 +2,9 @@
 
 {
     systemd.tmpfiles.rules = [
+        # Vault Services parent directory
+        "d /mnt/vault/services 2775 service service -"
+
         # Immich - runtime directories
         "d /var/lib/services/immich 2775 service service -"
         "d /var/lib/services/immich/ml-cache 2775 service service -"
