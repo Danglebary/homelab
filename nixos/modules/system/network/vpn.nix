@@ -55,26 +55,38 @@ in
     systemd.services.vpn-routing = {
         description = "VPN slice routing for homelab services";
         after = [ "network.target" "openvpn-pia.service" ];
-        wants = [ "network.target" "openvpn-pia.service" ];
+        requires = [ "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
+        # Bind lifecycle to OpenVPN - if OpenVPN stops, this stops too
+        bindsTo = [ "openvpn-pia.service" ];
 
         serviceConfig = {
             Type = "oneshot";
             RemainAfterExit = true;
-            ExecStart = pkgs.writeShellScript "vpn-routing-setup" ''
-                # Wait for tun0 to exist (prevents race conditions)
-                echo "Waiting for tun0 interface..."
-                for i in {1..30}; do
-                    if ip link show tun0 &>/dev/null; then
-                        echo "tun0 is ready"
-                        break
+            # Wait for tun0 to exist before starting
+            ExecStartPre = pkgs.writeShellScript "wait-for-tun0" ''
+                echo "Waiting for tun0 interface to be created by OpenVPN..."
+                for i in {1..60}; do
+                    if ${pkgs.iproute2}/bin/ip link show tun0 &>/dev/null; then
+                        echo "tun0 interface found"
+                        # Also verify it's in UP state
+                        if ${pkgs.iproute2}/bin/ip link show tun0 | grep -q "state UP"; then
+                            echo "tun0 is UP and ready"
+                            exit 0
+                        else
+                            echo "tun0 exists but not UP yet, waiting..."
+                        fi
                     fi
-                    if [ $i -eq 30 ]; then
-                        echo "ERROR: tun0 did not appear after 30 seconds"
+                    if [ $i -eq 60 ]; then
+                        echo "ERROR: tun0 did not appear or come UP after 60 seconds"
+                        echo "OpenVPN service status:"
+                        ${pkgs.systemd}/bin/systemctl status openvpn-pia.service || true
                         exit 1
                     fi
                     sleep 1
                 done
+            '';
+            ExecStart = pkgs.writeShellScript "vpn-routing-setup" ''
 
                 # Add VPN routing table if it doesn't exist
                 grep -q '^${toString vpnTableNumber} vpn$' /etc/iproute2/rt_tables || \
