@@ -23,7 +23,7 @@
             WorkingDirectory = "/var/lib/services/cloudflared";
             ReadWritePaths   = [ "/var/lib/services/cloudflared" ];
 
-            ExecStart   = "${pkgs.cloudflared}/bin/cloudflared tunnel run --config /etc/cloudflared/config.yml";
+            ExecStart   = "${pkgs.cloudflared}/bin/cloudflared --config /etc/cloudflared/config.yml tunnel run";
             Environment = [ "TZ=America/Los_Angeles" ];
 
             # Security settings
