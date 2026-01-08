@@ -35,13 +35,7 @@ in
             WorkingDirectory = "/etc/openvpn/pia";
 
             # Force interface name to tun0 to prevent race conditions
-            # Using --pull-filter to ignore pushed CRL directives
-            ExecStart = "${pkgs.openvpn}/bin/openvpn --dev tun0 --config /etc/openvpn/pia/pia.conf --auth-user-pass /etc/openvpn/pia/credentials.txt --pull-filter ignore crl-verify";
-
-            # Set OpenSSL to be more permissive with older certificate formats
-            Environment = [
-                "OPENSSL_CONF="
-            ];
+            ExecStart = "${pkgs.openvpn}/bin/openvpn --dev tun0 --config /etc/openvpn/pia/pia.conf --auth-user-pass /etc/openvpn/pia/credentials.txt";
 
             Restart = "on-failure";
             RestartSec = "10s";
