@@ -48,7 +48,7 @@
     };
 
     environment.etc."cloudflared/config.yml".text = ''
-        tunnel: <TUNNEL-UUID>
+        tunnel: 3e469ec3-0aca-4d25-9908-dd90f0538037
         credentials-file: /var/lib/services/cloudflared/credentials.json
 
         ingress:

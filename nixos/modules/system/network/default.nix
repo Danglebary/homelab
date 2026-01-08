@@ -2,7 +2,7 @@
 
 {
     imports = [
-        # ./cloudflared.nix
+        ./cloudflared.nix
         ./nfs.nix
         # ./slices.nix
         ./ssh.nix
