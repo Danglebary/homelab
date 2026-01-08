@@ -74,7 +74,7 @@ in
     # Define custom routing table for VPN
     networking.iproute2 = {
         enable = true;
-        tables = {
+        rtables = {
             vpn = 100;
         };
     };
