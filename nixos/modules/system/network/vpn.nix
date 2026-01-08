@@ -54,14 +54,6 @@ in
         '';
 
         ExecStopPost = pkgs.writeShellScript "vpn-routing-cleanup" ''
-        # Remove UID routing rules
-        ${lib.concatStringsSep "\n" (map (uid: ''
-            ${nft} add rule inet vpnkill output meta skuid ${toString uid} oifname "lo" accept
-            ${nft} add rule inet vpnkill output meta skuid ${toString uid} ip protocol udp udp dport 53 oifname != "tun0" drop
-            ${nft} add rule inet vpnkill output meta skuid ${toString uid} ip protocol tcp tcp dport 53 oifname != "tun0" drop
-            ${nft} add rule inet vpnkill output meta skuid ${toString uid} oifname != "tun0" drop
-        '') vpnUIDs)}
-
         # Flush VPN routing table
         ${ip} route flush table ${toString vpnTableNumber} 2>/dev/null || true
         '';
