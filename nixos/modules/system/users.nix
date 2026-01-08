@@ -22,6 +22,7 @@
                 vim
                 gh
                 jq
+                smartmontools
             ];
 
             shell = pkgs.bash;
