@@ -37,65 +37,41 @@ in
             # Force interface name to tun0 to prevent race conditions
             ExecStart = "${pkgs.openvpn}/bin/openvpn --dev tun0 --config /etc/openvpn/pia/pia.conf --auth-user-pass /etc/openvpn/pia/credentials.txt";
 
+            # Configure VPN routing after tunnel is established
+            ExecStartPost = pkgs.writeShellScript "vpn-routing-setup" ''
+                # Add VPN routing table if it doesn't exist
+                ${pkgs.gnugrep}/bin/grep -q '^${toString vpnTableNumber} vpn$' /etc/iproute2/rt_tables || \
+                    echo '${toString vpnTableNumber} vpn' >> /etc/iproute2/rt_tables
+
+                # Add default route via VPN table
+                ${pkgs.iproute2}/bin/ip route add default dev tun0 table vpn || true
+
+                # Add policy routing rules for each VPN service user
+                ${lib.concatStringsSep "\n" (map (uid:
+                    "${pkgs.iproute2}/bin/ip rule add uidrange ${toString uid}-${toString uid} lookup vpn || true"
+                ) vpnUIDs)}
+
+                echo "VPN routing configured successfully"
+            '';
+
+            # Clean up routing rules when service stops
+            ExecStopPost = pkgs.writeShellScript "vpn-routing-cleanup" ''
+                # Remove policy routing rules
+                ${lib.concatStringsSep "\n" (map (uid:
+                    "${pkgs.iproute2}/bin/ip rule del uidrange ${toString uid}-${toString uid} lookup vpn 2>/dev/null || true"
+                ) vpnUIDs)}
+
+                # Remove VPN routes
+                ${pkgs.iproute2}/bin/ip route flush table vpn 2>/dev/null || true
+
+                echo "VPN routing cleaned up"
+            '';
+
             Restart = "on-failure";
             RestartSec = "10s";
 
             # OpenVPN needs these capabilities for network setup
             AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_NET_RAW" ];
-        };
-    };
-
-    # VPN routing setup service (handles routing table creation and policy routing)
-    systemd.services.vpn-routing = {
-        description = "VPN slice routing for homelab services";
-        after = [ "network.target" "openvpn-pia.service" ];
-        requires = [ "openvpn-pia.service" ];
-        wantedBy = [ "multi-user.target" ];
-        # Bind lifecycle to OpenVPN - if OpenVPN stops, this stops too
-        bindsTo = [ "openvpn-pia.service" ];
-
-        serviceConfig = {
-            Type = "oneshot";
-            RemainAfterExit = true;
-            # Wait for tun0 to exist before starting
-            ExecStartPre = pkgs.writeShellScript "wait-for-tun0" ''
-                echo "Waiting for tun0 interface to be created by OpenVPN..."
-                for i in {1..60}; do
-                    if ${pkgs.iproute2}/bin/ip link show tun0 &>/dev/null; then
-                        echo "tun0 interface found"
-                        # Also verify it's in UP state
-                        if ${pkgs.iproute2}/bin/ip link show tun0 | grep -q "state UP"; then
-                            echo "tun0 is UP and ready"
-                            exit 0
-                        else
-                            echo "tun0 exists but not UP yet, waiting..."
-                        fi
-                    fi
-                    if [ $i -eq 60 ]; then
-                        echo "ERROR: tun0 did not appear or come UP after 60 seconds"
-                        echo "OpenVPN service status:"
-                        ${pkgs.systemd}/bin/systemctl status openvpn-pia.service || true
-                        exit 1
-                    fi
-                    sleep 1
-                done
-            '';
-            ExecStart = pkgs.writeShellScript "vpn-routing-setup" ''
-
-                # Add VPN routing table if it doesn't exist
-                grep -q '^${toString vpnTableNumber} vpn$' /etc/iproute2/rt_tables || \
-                    echo '${toString vpnTableNumber} vpn' >> /etc/iproute2/rt_tables
-
-                # Add default route via VPN table
-                ip route add default dev tun0 table vpn || true
-
-                # Add policy routing rules for each VPN service user
-                ${lib.concatStringsSep "\n" (map (uid:
-                    "ip rule add uidrange ${toString uid}-${toString uid} lookup vpn || true"
-                ) vpnUIDs)}
-
-                echo "VPN routing configured successfully"
-            '';
         };
     };
 
