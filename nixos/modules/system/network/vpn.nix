@@ -75,8 +75,8 @@ in
 
     systemd.services.vpn-killswitch = {
         description = "Per-UID VPN kill switch";
-        after    = [ "network-online.target" "openvpn-pia.service" ];
-        wants    = [ "openvpn-pia.service" ];
+        after  = [ "network-online.target" "openvpn-pia.service" ];
+        wants  = [ "network-online.target" "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {
