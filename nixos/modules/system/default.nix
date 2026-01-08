@@ -2,8 +2,10 @@
 
 {
     imports = [
-        ./services
-        ./network.nix
-        ./directories.nix
+        ./file-system
+        ./network
+        ./groups.nix
+        ./localization.nix
+        ./users.nix
     ];
 }

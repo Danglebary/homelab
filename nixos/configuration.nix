@@ -3,19 +3,14 @@
 {
     imports = [
         ./modules
-        ./ssh.nix
-        ./zfs.nix
-        ./docker.nix
-        ./kernel.nix
-        ./localization.nix
         ./hardware-configuration.nix
     ];
 
-    # Bootloader.
+    # Bootloader
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
 
-    # Use latest kernel.
+    # Use latest kernel
     # NOTE: commented out as zfs is marked as broken in latest kernel (6.16.2)
     # boot.kernelPackages = pkgs.linuxPackages_latest;
 

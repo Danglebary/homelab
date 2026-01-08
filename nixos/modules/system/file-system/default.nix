@@ -2,7 +2,7 @@
 
 {
     imports = [
-        ./services
-        ./system
+        ./tmpfiles.nix
+        ./zfs.nix
     ];
 }

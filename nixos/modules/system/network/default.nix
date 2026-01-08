@@ -1,14 +1,22 @@
 { config, lib, pkgs, ... }:
 
 {
-    # Global network configuration
+    imports = [
+        ./cloudflared.nix
+        ./nfs.nix
+        ./slices.nix
+        ./ssh.nix
+        ./vpn.nix
+    ];
+
+    # Global networking configuration
 
     # Enable networking
     systemd.network.enable = true;
-  
-    # Set our hostname
+
+    # Set the hostname
     networking.hostName = "homelab-hl15";
-  
+
     # Required for ZFS - unique identifier for this machine
     networking.hostId = "8425e349";
 
@@ -33,24 +41,16 @@
 
     # Firewall configuration
     networking.firewall = {
-        # Allow inbound TCP ports (SSH only - services managed in ./service-name.nix)
+        enable = true;
+
+        # Allow inbound TCP ports
         allowedTCPPorts = [
             22    # SSH
-            2283  # Immich
             32400 # Plex
         ];
-
-        # Trust Docker bridge interfaces for container networking
-        trustedInterfaces = [ "docker0" "br-+" ];
-
-        # Allow traffic forwarding for Docker containers
-        # Required for containers to reach internet and for inter-container communication
-        extraCommands = ''
-            iptables -A FORWARD -i docker+ -j ACCEPT
-            iptables -A FORWARD -o docker+ -j ACCEPT
-        '';
     };
 
+    # Bonded network interface configuration
     systemd.network.netdevs."10-bond0" = {
         netdevConfig = {
             Name = "bond0";
@@ -64,7 +64,9 @@
         };
     };
 
+    # Define network interfaces and bonding
     systemd.network.networks = {
+        # Bonded interface with static IP
         "10-bond0" = {
             matchConfig.Name = "bond0";
             address = [ "192.168.68.100/24" ];
@@ -75,6 +77,8 @@
                 DNS = "192.168.68.1 1.1.1.1 1.0.0.1";
             };
         };
+
+        # Physical interfaces part of the bond
 
         "20-eno1" = {
             matchConfig.Name = "eno1";
