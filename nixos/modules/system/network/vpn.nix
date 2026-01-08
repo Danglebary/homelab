@@ -39,10 +39,6 @@ in
 
             # Configure VPN routing after tunnel is established
             ExecStartPost = pkgs.writeShellScript "vpn-routing-setup" ''
-                # Add VPN routing table if it doesn't exist
-                ${pkgs.gnugrep}/bin/grep -q '^${toString vpnTableNumber} vpn$' /etc/iproute2/rt_tables || \
-                    echo '${toString vpnTableNumber} vpn' >> /etc/iproute2/rt_tables
-
                 # Add default route via VPN table
                 ${pkgs.iproute2}/bin/ip route add default dev tun0 table vpn || true
 
@@ -74,6 +70,15 @@ in
             AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_NET_RAW" ];
         };
     };
+
+    # Define custom routing table for VPN
+    networking.iproute2 = {
+        enable = true;
+        tables = {
+            vpn = 100;
+        };
+    };
+
 
     # VPN kill switch - prevents traffic leaks if VPN goes down
     networking.firewall.extraCommands = lib.concatStringsSep "\n" (
