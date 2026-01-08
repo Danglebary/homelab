@@ -4,9 +4,9 @@
     imports = [
         ./cloudflared.nix
         ./nfs.nix
-        # ./slices.nix
+        ./slices.nix
         ./ssh.nix
-        # ./vpn.nix
+        ./vpn.nix
     ];
 
     # Global networking configuration

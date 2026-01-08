@@ -7,11 +7,11 @@
         # Ensure the service starts after network and VPN is up
         after = [
             "network-online.target"
-            "wg-quick@wg0.service"
+            "openvpn-pia.service"
         ];
         wants = [
             "network-online.target"
-            "wg-quick@wg0.service"
+            "openvpn-pia.service"
         ];
         wantedBy = [ "multi-user.target" ];
 

@@ -22,43 +22,44 @@ in
         "net.ipv4.conf.all.src_valid_mark" = 1;
     };
 
-    # WireGuard interface configuration (PIA or Private Internet Access)
-    networking.wireguard.interfaces.wg0 = {
-        enable = true;
-        privateKeyFile = "/etc/wireguard/wg0.key";
-        address = [ "10.0.0.1/24" ];
-        listenPort = 51820;
-        table = vpnTableNumber;
+    # OpenVPN service for PIA (Private Internet Access)
+    systemd.services.openvpn-pia = {
+        description = "OpenVPN connection to PIA (Seattle)";
+        after = [ "network-online.target" ];
+        wants = [ "network-online.target" ];
+        wantedBy = [ "multi-user.target" ];
 
-        peers = [
-            {
-                # TODO: Replace with actual peer configuration
-                publicKey = "<PIA-server-public-key>";
-                allowedIPs = [ "0.0.0.0/0" "::/0" ];
-                # TODO: Replace with actual endpoint
-                endpoint = "<PIA-server-endpoint>:51820";
-                persistentKeepalive = 25;
-            }
-        ];
+        serviceConfig = {
+            Type = "notify";
+            PrivateTmp = true;
+            WorkingDirectory = "/etc/openvpn/pia";
+            ExecStart = "${pkgs.openvpn}/bin/openvpn --config /etc/openvpn/pia/pia.conf --auth-user-pass /etc/openvpn/pia/credentials.txt";
+
+            Restart = "on-failure";
+            RestartSec = "10s";
+
+            # OpenVPN needs these capabilities for network setup
+            AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_NET_RAW" "CAP_SETUID" "CAP_SETGID" ];
+        };
     };
 
     # Dedicated routing table for VPN slice
     networking.extraCommands = lib.concatStringsSep "\n" [
         # Only add the table if it doesn't exist yet
-        "grep -q '^${vpnTableNumber} vpn\$' /etc/iproute2/rt_tables || echo '${vpnTableNumber} vpn' >> /etc/iproute2/rt_tables"
+        "grep -q '^${toString vpnTableNumber} vpn\$' /etc/iproute2/rt_tables || echo '${toString vpnTableNumber} vpn' >> /etc/iproute2/rt_tables"
 
-        # Add default route via wg0 for vpn table
-        "ip route add default dev wg0 table vpn || true"
+        # Add default route via tun0 for vpn table
+        "ip route add default dev tun0 table vpn || true"
 
         # Add policy routing rules for each VPN service user
-        (lib.concatStringsSep "\n" (map (uid: "ip rule add uidrange ${uid}-${uid} lookup vpn || true") vpnUIDs))
+        (lib.concatStringsSep "\n" (map (uid: "ip rule add uidrange ${toString uid}-${toString uid} lookup vpn || true") vpnUIDs))
     ];
 
     # Ensure VPN routing rules are applied on boot
     systemd.services.vpn-routing = {
         description = "VPN slice routing for homelab services";
-        after = [ "network.target" "wg-quick@wg0.service" ];
-        wants = [ "network.target" "wg-quick@wg0.service" ];
+        after = [ "network.target" "openvpn-pia.service" ];
+        wants = [ "network.target" "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {
@@ -66,18 +67,20 @@ in
             RemainAfterExit = true;
             ExecStart = lib.concatStringsSep " && " [
                 # Default route via VPN table
-                "ip route add default dev wg0 table vpn || true"
+                "ip route add default dev tun0 table vpn || true"
                 # Policy routing for VPN slice UIDs
-                (lib.concatStringsSep " && " (map (uid: "ip rule add uidrange ${uid}-${uid} lookup vpn || true") vpnUIDs))
+                (lib.concatStringsSep " && " (map (uid: "ip rule add uidrange ${toString uid}-${toString uid} lookup vpn || true") vpnUIDs))
             ];
         };
     };
 
     # Ensure VPN traffic is dropped if the VPN goes down (kill switch)
-    networking.firewall.extraCommands = lib.concatStringsSep "\n" [
-        "# Drop all outgoing traffic from VPN slice if wg0 is down"
-        "nft add table inet vpnkill || true"
-        "nft add chain inet vpnkill output { type filter hook output priority 0; policy accept; } || true"
-        "nft add rule inet vpnkill oifname != \"wg0\" ip saddr 10.0.0.0/24 drop || true"
-    ];
+    networking.firewall.extraCommands = lib.concatStringsSep "\n" (
+        [
+            "# Drop all outgoing traffic from VPN slice if tun0 is down"
+            "nft add table inet vpnkill || true"
+            "nft add chain inet vpnkill output { type filter hook output priority 0; policy accept; } || true"
+        ]
+        ++ (map (uid: "nft add rule inet vpnkill output skuid ${toString uid} oifname != \\\"tun0\\\" drop || true") vpnUIDs)
+    );
 }
