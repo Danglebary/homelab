@@ -3,9 +3,9 @@
 {
     imports = [
         ./file-system
-        ./network
-        ./groups.nix
         ./localization.nix
+        ./groups.nix
         ./users.nix
+        ./network
     ];
 }
