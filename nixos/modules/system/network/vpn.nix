@@ -12,6 +12,9 @@ let
     vpnUIDs = map (u: config.users.users.${u}.uid) vpnUsers;
 
     vpnTableNumber = 100;
+
+    nft = "${pkgs.nftables}/bin/nft";
+    ip  = "${pkgs.iproute2}/bin/ip";
 in
 {
     #### Kernel / sysctl ####
@@ -42,22 +45,22 @@ in
 
         ExecStartPost = pkgs.writeShellScript "vpn-routing-setup" ''
         # Default route via VPN in table 100
-        ${pkgs.iproute2}/bin/ip route replace default dev tun0 table ${toString vpnTableNumber}
+        ${ip} route replace default dev tun0 table ${toString vpnTableNumber}
 
         # Policy routing per UID
         ${lib.concatStringsSep "\n" (map (uid:
-            "${pkgs.iproute2}/bin/ip rule replace uidrange ${toString uid}-${toString uid} lookup ${toString vpnTableNumber}"
+            "${ip} rule replace uidrange ${toString uid}-${toString uid} lookup ${toString vpnTableNumber}"
         ) vpnUIDs)}
         '';
 
         ExecStopPost = pkgs.writeShellScript "vpn-routing-cleanup" ''
         # Remove UID routing rules
         ${lib.concatStringsSep "\n" (map (uid:
-            "${pkgs.iproute2}/bin/ip rule del uidrange ${toString uid}-${toString uid} lookup ${toString vpnTableNumber} 2>/dev/null || true"
+            "${ip} rule del uidrange ${toString uid}-${toString uid} lookup ${toString vpnTableNumber} 2>/dev/null || true"
         ) vpnUIDs)}
 
         # Flush VPN routing table
-        ${pkgs.iproute2}/bin/ip route flush table ${toString vpnTableNumber} 2>/dev/null || true
+        ${ip} route flush table ${toString vpnTableNumber} 2>/dev/null || true
         '';
 
         Restart = "on-failure";
@@ -84,19 +87,23 @@ in
             RemainAfterExit = true;
 
             ExecStart = pkgs.writeShellScript "vpn-killswitch" ''
-            ${pkgs.nftables}/bin/nft add table inet vpnkill || true
-            ${pkgs.nftables}/bin/nft flush table inet vpnkill
-
-            ${pkgs.nftables}/bin/nft add chain inet vpnkill output \
-                '{ type filter hook output priority -100; policy accept; }'
+            ${nft} add table inet vpnkill || true
+            ${nft} flush table inet vpnkill
+            ${nft} add chain inet vpnkill output '{ type filter hook output priority -100; policy accept; }'
 
             ${lib.concatStringsSep "\n" (map (uid: ''
-                ${pkgs.nftables}/bin/nft add rule inet vpnkill output skuid ${toString uid} oifname "lo" accept
-                ${pkgs.nftables}/bin/nft add rule inet vpnkill output skuid ${toString uid} udp dport 53 oifname != "tun0" drop
-                ${pkgs.nftables}/bin/nft add rule inet vpnkill output skuid ${toString uid} tcp dport 53 oifname != "tun0" drop
-                ${pkgs.nftables}/bin/nft add rule inet vpnkill output skuid ${toString uid} oifname != "tun0" drop
+                # Allow loopback
+                ${nft} add rule inet vpnkill output meta skuid ${toString uid} oifname "lo" accept
+
+                # Block DNS outside tun0
+                ${nft} add rule inet vpnkill output meta skuid ${toString uid} ip protocol udp udp dport 53 oifname != "tun0" drop
+                ${nft} add rule inet vpnkill output meta skuid ${toString uid} ip protocol tcp tcp dport 53 oifname != "tun0" drop
+
+                # Drop all other traffic outside tun0
+                ${nft} add rule inet vpnkill output meta skuid ${toString uid} oifname != "tun0" drop
             '') vpnUIDs)}
             '';
+
 
             ExecStop = ''
             ${pkgs.nftables}/bin/nft delete table inet vpnkill 2>/dev/null || true
