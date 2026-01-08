@@ -84,22 +84,22 @@ in
             RemainAfterExit = true;
 
             ExecStart = pkgs.writeShellScript "vpn-killswitch" ''
-            nft add table inet vpnkill || true
-            nft flush table inet vpnkill
+            ${pkgs.nftables}/bin/nft add table inet vpnkill || true
+            ${pkgs.nftables}/bin/nft flush table inet vpnkill
 
-            nft add chain inet vpnkill output \
+            ${pkgs.nftables}/bin/nft add chain inet vpnkill output \
                 '{ type filter hook output priority -100; policy accept; }'
 
             ${lib.concatStringsSep "\n" (map (uid: ''
-                nft add rule inet vpnkill output skuid ${toString uid} oifname "lo" accept
-                nft add rule inet vpnkill output skuid ${toString uid} udp dport 53 oifname != "tun0" drop
-                nft add rule inet vpnkill output skuid ${toString uid} tcp dport 53 oifname != "tun0" drop
-                nft add rule inet vpnkill output skuid ${toString uid} oifname != "tun0" drop
+                ${pkgs.nftables}/bin/nft add rule inet vpnkill output skuid ${toString uid} oifname "lo" accept
+                ${pkgs.nftables}/bin/nft add rule inet vpnkill output skuid ${toString uid} udp dport 53 oifname != "tun0" drop
+                ${pkgs.nftables}/bin/nft add rule inet vpnkill output skuid ${toString uid} tcp dport 53 oifname != "tun0" drop
+                ${pkgs.nftables}/bin/nft add rule inet vpnkill output skuid ${toString uid} oifname != "tun0" drop
             '') vpnUIDs)}
             '';
 
             ExecStop = ''
-            nft delete table inet vpnkill 2>/dev/null || true
+            ${pkgs.nftables}/bin/nft delete table inet vpnkill 2>/dev/null || true
             '';
         };
     };
