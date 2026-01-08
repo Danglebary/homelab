@@ -36,7 +36,6 @@
 
             home = "/var/lib/services/deluge";
             createHome = true;
-            shell = pkgs.shadow.runAsShell;
         };
 
         prowlarr = {
@@ -48,7 +47,6 @@
 
             home = "/var/lib/services/prowlarr";
             createHome = true;
-            shell = pkgs.shadow.runAsShell;
         };
 
         radarr = {
@@ -60,7 +58,6 @@
 
             home = "/var/lib/services/radarr";
             createHome = true;
-            shell = pkgs.shadow.runAsShell;
         };
 
         sonarr = {
@@ -72,7 +69,6 @@
 
             home = "/var/lib/services/sonarr";
             createHome = true;
-            shell = pkgs.shadow.runAsShell;
         };
 
         plex = {
@@ -84,7 +80,6 @@
 
             home = "/var/lib/services/plex";
             createHome = true;
-            shell = pkgs.shadow.runAsShell;
         };
 
         tdarr = {
@@ -96,7 +91,6 @@
 
             home = "/var/lib/services/tdarr";
             createHome = true;
-            shell = pkgs.shadow.runAsShell;
         };
 
         overseerr = {
@@ -108,7 +102,6 @@
 
             home = "/var/lib/services/overseerr";
             createHome = true;
-            shell = pkgs.shadow.runAsShell;
         };
 
         immich = {
@@ -120,7 +113,6 @@
 
             home = "/var/lib/services/immich";
             createHome = true;
-            shell = pkgs.shadow.runAsShell;
         };
 
         cloudflared = {
@@ -132,7 +124,6 @@
 
             home = "/var/lib/services/cloudflared";
             createHome = true;
-            shell = pkgs.shadow.runAsShell;
         };
     };
 }
