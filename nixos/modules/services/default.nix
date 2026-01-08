@@ -2,11 +2,11 @@
 
 {
     imports = [
-        ./deluge.nix
-        ./prowlarr.nix
-        ./radarr.nix
-        ./sonarr.nix
-        ./plex.nix
-        ./overseerr.nix
+        # ./deluge.nix
+        # ./prowlarr.nix
+        # ./radarr.nix
+        # ./sonarr.nix
+        # ./plex.nix
+        # ./overseerr.nix
     ];
 }

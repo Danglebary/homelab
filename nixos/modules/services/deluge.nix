@@ -49,6 +49,6 @@
 
             # Graceful shutdown
             TimeoutStopSec = "300s"; # Allow up to 5 minutes to shut down
-        }
+        };
     };
 }

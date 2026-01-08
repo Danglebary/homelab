@@ -134,5 +134,5 @@
             createHome = true;
             shell = pkgs.shadow.runAsShell;
         };
-    }
+    };
 }

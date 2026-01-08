@@ -22,5 +22,5 @@
         # Services that perform media transcoding should be part of this group
         # Useful for granting GPU access to services like Plex and Tdarr
         transcode = {};
-    }
+    };
 }
