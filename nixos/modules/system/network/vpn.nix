@@ -1,111 +1,109 @@
 { config, lib, pkgs, ... }:
 
 let
-  vpnUsers = [
-    "deluge"
-    "sonarr"
-    "radarr"
-    "prowlarr"
-  ];
+    vpnUsers = [
+      "deluge"
+      "sonarr"
+      "radarr"
+      "prowlarr"
+    ];
 
-  # Convert VPN users to UIDs
-  vpnUIDs = map (u: config.users.users.${u}.uid) vpnUsers;
+    # Convert VPN users to UIDs
+    vpnUIDs = map (u: config.users.users.${u}.uid) vpnUsers;
 
-  vpnTableNumber = 100;
+    vpnTableNumber = 100;
 in
 {
-    # Load TUN/TAP kernel module for VPN support
+    #### Kernel / sysctl ####
     boot.kernelModules = [ "tun" ];
 
-    # Ensure /dev/net/tun is available
     boot.kernel.sysctl = {
-        "net.ipv4.conf.all.src_valid_mark" = 1;
+    "net.ipv4.conf.all.src_valid_mark" = 1;
     };
 
-    # OpenVPN service for PIA (Private Internet Access)
+    #### OpenVPN service ####
     systemd.services.openvpn-pia = {
-        description = "OpenVPN connection to PIA (Seattle)";
-        after = [ "network-online.target" ];
-        wants = [ "network-online.target" ];
+    description = "OpenVPN connection to PIA (Seattle)";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+
+    serviceConfig = {
+        Type = "notify";
+        PrivateTmp = true;
+        WorkingDirectory = "/etc/openvpn/pia";
+
+        ExecStart = ''
+        ${pkgs.openvpn}/bin/openvpn \
+            --dev tun0 \
+            --config /etc/openvpn/pia/pia.conf \
+            --auth-user-pass /etc/openvpn/pia/credentials.txt
+        '';
+
+        ExecStartPost = pkgs.writeShellScript "vpn-routing-setup" ''
+        # Default route via VPN in table 100
+        ${pkgs.iproute2}/bin/ip route replace default dev tun0 table ${toString vpnTableNumber}
+
+        # Policy routing per UID
+        ${lib.concatStringsSep "\n" (map (uid:
+            "${pkgs.iproute2}/bin/ip rule replace uidrange ${toString uid}-${toString uid} lookup ${toString vpnTableNumber}"
+        ) vpnUIDs)}
+        '';
+
+        ExecStopPost = pkgs.writeShellScript "vpn-routing-cleanup" ''
+        # Remove UID routing rules
+        ${lib.concatStringsSep "\n" (map (uid:
+            "${pkgs.iproute2}/bin/ip rule del uidrange ${toString uid}-${toString uid} lookup ${toString vpnTableNumber} 2>/dev/null || true"
+        ) vpnUIDs)}
+
+        # Flush VPN routing table
+        ${pkgs.iproute2}/bin/ip route flush table ${toString vpnTableNumber} 2>/dev/null || true
+        '';
+
+        Restart = "on-failure";
+        RestartSec = "10s";
+
+        AmbientCapabilities = [
+        "CAP_NET_ADMIN"
+        "CAP_NET_RAW"
+        ];
+    };
+    };
+
+    #### nftables kill switch ####
+    networking.nftables.enable = true;
+
+    systemd.services.vpn-killswitch = {
+        description = "Per-UID VPN kill switch";
+        after    = [ "network-online.target" "openvpn-pia.service" ];
+        wants    = [ "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {
-            Type = "notify";
-            PrivateTmp = true;
-            WorkingDirectory = "/etc/openvpn/pia";
+            Type = "oneshot";
+            RemainAfterExit = true;
 
-            # Force interface name to tun0 to prevent race conditions
-            ExecStart = "${pkgs.openvpn}/bin/openvpn --dev tun0 --config /etc/openvpn/pia/pia.conf --auth-user-pass /etc/openvpn/pia/credentials.txt";
+            ExecStart = pkgs.writeShellScript "vpn-killswitch" ''
+            nft add table inet vpnkill || true
+            nft flush table inet vpnkill
 
-            # Configure VPN routing after tunnel is established
-            ExecStartPost = pkgs.writeShellScript "vpn-routing-setup" ''
-                # Add default route via VPN table
-                ${pkgs.iproute2}/bin/ip route add default dev tun0 table vpn || true
+            nft add chain inet vpnkill output \
+                '{ type filter hook output priority -100; policy accept; }'
 
-                # Add policy routing rules for each VPN service user
-                ${lib.concatStringsSep "\n" (map (uid:
-                    "${pkgs.iproute2}/bin/ip rule add uidrange ${toString uid}-${toString uid} lookup vpn || true"
-                ) vpnUIDs)}
-
-                echo "VPN routing configured successfully"
+            ${lib.concatStringsSep "\n" (map (uid: ''
+                nft add rule inet vpnkill output skuid ${toString uid} oifname "lo" accept
+                nft add rule inet vpnkill output skuid ${toString uid} udp dport 53 oifname != "tun0" drop
+                nft add rule inet vpnkill output skuid ${toString uid} tcp dport 53 oifname != "tun0" drop
+                nft add rule inet vpnkill output skuid ${toString uid} oifname != "tun0" drop
+            '') vpnUIDs)}
             '';
 
-            # Clean up routing rules when service stops
-            ExecStopPost = pkgs.writeShellScript "vpn-routing-cleanup" ''
-                # Remove policy routing rules
-                ${lib.concatStringsSep "\n" (map (uid:
-                    "${pkgs.iproute2}/bin/ip rule del uidrange ${toString uid}-${toString uid} lookup vpn 2>/dev/null || true"
-                ) vpnUIDs)}
-
-                # Remove VPN routes
-                ${pkgs.iproute2}/bin/ip route flush table vpn 2>/dev/null || true
-
-                echo "VPN routing cleaned up"
+            ExecStop = ''
+            nft delete table inet vpnkill 2>/dev/null || true
             '';
-
-            Restart = "on-failure";
-            RestartSec = "10s";
-
-            # OpenVPN needs these capabilities for network setup
-            AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_NET_RAW" ];
         };
     };
 
-    # Define custom routing table for VPN
-    networking.iproute2 = {
-        enable = true;
-        rtables = {
-            vpn = 100;
-        };
-    };
-
-
-    # VPN kill switch - prevents traffic leaks if VPN goes down
-    networking.firewall.extraCommands = lib.concatStringsSep "\n" (
-        [
-            "# Create vpnkill table and chain with higher priority"
-            "nft add table inet vpnkill || true"
-            "nft flush table inet vpnkill || true"
-            "nft add chain inet vpnkill output { type filter hook output priority -100\\; policy accept\\; } || true"
-
-            "# Allow loopback traffic for VPN users"
-        ]
-        ++ (map (uid: "nft add rule inet vpnkill output skuid ${toString uid} oifname \\\"lo\\\" accept || true") vpnUIDs)
-        ++ [
-            ""
-            "# Prevent DNS leaks - block DNS traffic not going through tun0"
-        ]
-        ++ (map (uid: "nft add rule inet vpnkill output skuid ${toString uid} udp dport 53 oifname != \\\"tun0\\\" drop || true") vpnUIDs)
-        ++ (map (uid: "nft add rule inet vpnkill output skuid ${toString uid} tcp dport 53 oifname != \\\"tun0\\\" drop || true") vpnUIDs)
-        ++ [
-            ""
-            "# Drop all other traffic from VPN users not going through tun0"
-        ]
-        ++ (map (uid: "nft add rule inet vpnkill output skuid ${toString uid} oifname != \\\"tun0\\\" drop || true") vpnUIDs)
-    );
-
-    # Clean up kill switch on firewall stop
-    networking.firewall.extraStopCommands = ''
-        nft delete table inet vpnkill 2>/dev/null || true
-    '';
+    #### Optional but strongly recommended (prevent IPv6 leaks) ####
+    networking.enableIPv6 = false;
 }
