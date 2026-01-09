@@ -51,8 +51,8 @@
             # Restrict network access to only necessary address families
             RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
 
-            # Restart on failure
-            Restart    = "on-failure";
+            # Restart always (including when VPN restarts)
+            Restart    = "always";
             RestartSec = "5s";
 
             # Graceful shutdown
@@ -96,8 +96,8 @@
             # Restrict network access to only necessary address families
             RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
 
-            # Restart on failure
-            Restart = "on-failure";
+            # Restart always (including when VPN restarts)
+            Restart = "always";
             RestartSec = "5s";
 
             # Graceful shutdown
