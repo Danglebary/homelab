@@ -48,6 +48,9 @@ in
       # Required for systemd 254+ to allow namespace bind mount
       PrivateMounts = false;
 
+      # Allow writing to /var/run/netns for namespace exposure
+      ReadWritePaths = [ "/var/run/netns" ];
+
       ExecStart = pkgs.writeShellScript "netns-create" ''
         set -e
 
