@@ -25,7 +25,7 @@
                 /mnt/vault/downloads
             ];
 
-            ExecStart   = "${pkgs.deluge}/bin/deluged -c /var/lib/services/deluge";
+            ExecStart   = "${pkgs.deluge}/bin/deluged -d -c /var/lib/services/deluge";
             Environment = [ "TZ=America/Los_Angeles" ];
             
             # Security settings
