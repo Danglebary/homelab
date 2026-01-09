@@ -1,6 +1,17 @@
 { config, lib, pkgs, ... }:
 
 {
+    # Port forwarding from host to VPN namespace for Sonarr web UI
+    networking.nftables.ruleset = ''
+      table inet nat {
+        chain prerouting {
+          type nat hook prerouting priority dstnat; policy accept;
+          # Forward Sonarr web UI port to VPN namespace
+          tcp dport 8989 dnat ip to 10.200.200.2
+        }
+      }
+    '';
+
     systemd.services.sonarr = {
         description = "Sonarr TV Show Manager";
 
@@ -42,8 +53,8 @@
             # Restrict network access to only necessary address families
             RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
 
-            # Restart on failure
-            Restart    = "on-failure";
+            # Restart always (including when VPN restarts)
+            Restart    = "always";
             RestartSec = "5s";
 
             # Graceful shutdown

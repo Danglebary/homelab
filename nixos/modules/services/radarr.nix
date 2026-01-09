@@ -1,6 +1,17 @@
 { config, lib, pkgs, ... }:
 
 {
+    # Port forwarding from host to VPN namespace for Radarr web UI
+    networking.nftables.ruleset = ''
+      table inet nat {
+        chain prerouting {
+          type nat hook prerouting priority dstnat; policy accept;
+          # Forward Radarr web UI port to VPN namespace
+          tcp dport 7878 dnat ip to 10.200.200.2
+        }
+      }
+    '';
+
     systemd.services.radarr = {
         description = "Radarr Movie Manager";
 
@@ -41,8 +52,8 @@
             # Restrict network access to only necessary address families
             RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
 
-            # Restart on failure
-            Restart    = "on-failure";
+            # Restart always (including when VPN restarts)
+            Restart    = "always";
             RestartSec = "5s";
 
             # Graceful shutdown
