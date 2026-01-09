@@ -76,13 +76,17 @@ in
         ${sysctl} -w net.ipv6.conf.all.disable_ipv6=1
         ${sysctl} -w net.ipv6.conf.default.disable_ipv6=1
 
-        # Add kill-switch: blackhole route as fallback if VPN drops
-        # This has metric 999 so it only applies if the default route via tun0 disappears
+        # Add default route through veth with low priority (metric 200)
+        # This allows OpenVPN to connect initially
+        # OpenVPN will add its own default route with metric 0, which takes precedence
+        ${ip} route add default via ${hostIP} dev ${vethNS} metric 200
+
+        # Add kill-switch: blackhole route as fallback if both VPN and default drop
+        # This has metric 999 so it only applies as absolute last resort
         ${ip} route add blackhole 0.0.0.0/0 metric 999
 
-        # Add routes to direct LAN traffic through veth
-        # (Internet traffic will use default route through tun0 set by OpenVPN)
-        # These routes are more specific than the blackhole, so they take precedence
+        # Add specific routes to direct LAN traffic through veth (metric 0, most preferred for LAN)
+        # These are more specific than default routes, so they always take precedence
         ${lib.concatMapStringsSep "\n" (range:
           "${ip} route add ${range} via ${hostIP} dev ${vethNS}"
         ) privateLANRanges}
