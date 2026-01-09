@@ -34,72 +34,66 @@ in
   };
 
   # Network namespace template service
-  # Creates isolated network environments with veth pair for host connectivity
-  # Keeps running to maintain the namespace for other services to join
+  # Creates named network namespaces that persist and can be referenced by other services
   systemd.services."netns@" = {
     description = "Named network namespace %I with veth pair";
     before = [ "network-pre.target" ];
     serviceConfig = {
-      Type = "simple";
+      Type = "oneshot";
+      RemainAfterExit = true;
 
-      # Create isolated network namespace
-      PrivateNetwork = true;
-
-      # Required capabilities for network namespace and network operations
+      # Required capabilities for network namespace operations
       AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_SYS_ADMIN" ];
 
-      ExecStartPre = let
-        script = pkgs.writeShellScript "netns-setup" ''
+      ExecStart = let
+        script = pkgs.writeShellScript "netns-create" ''
           set -e
+          NETNS_NAME="$1"
 
-          # Create veth pair to bridge namespace with host
+          # Create persistent network namespace
+          ${ip} netns add $NETNS_NAME
+
+          # Create veth pair (both ends start on host)
           ${ip} link add ${vethHost} type veth peer name ${vethNS}
 
-          # Move namespace-side veth into this service's namespace
-          ${ip} link set ${vethNS} netns $BASHPID
+          # Move namespace-side veth INTO the namespace
+          ${ip} link set ${vethNS} netns $NETNS_NAME
 
-          # Configure host-side veth interface
+          # Configure host-side veth (stays on host)
           ${ip} addr add ${hostIP}/30 dev ${vethHost}
           ${ip} link set ${vethHost} up
+
+          # Configure namespace-side veth (inside namespace)
+          ${ip} -n $NETNS_NAME addr add ${nsIP}/30 dev ${vethNS}
+          ${ip} -n $NETNS_NAME link set ${vethNS} up
+          ${ip} -n $NETNS_NAME link set lo up
+
+          # Disable IPv6 inside namespace
+          ${ip} netns exec $NETNS_NAME ${sysctl} -w net.ipv6.conf.all.disable_ipv6=1
+          ${ip} netns exec $NETNS_NAME ${sysctl} -w net.ipv6.conf.default.disable_ipv6=1
+
+          # Add default route through veth (metric 200) for initial VPN connection
+          ${ip} -n $NETNS_NAME route add default via ${hostIP} dev ${vethNS} metric 200
+
+          # Add kill-switch blackhole route (metric 999)
+          ${ip} -n $NETNS_NAME route add blackhole 0.0.0.0/0 metric 999
+
+          # Add LAN routes through veth
+          ${lib.concatMapStringsSep "\n" (range:
+            "${ip} -n $NETNS_NAME route add ${range} via ${hostIP} dev ${vethNS}"
+          ) privateLANRanges}
         '';
-      in "${script}";
+      in "${script} %I";
 
-      ExecStart = pkgs.writeShellScript "netns-run" ''
-        set -e
-
-        # Configure namespace-side veth interface
-        ${ip} addr add ${nsIP}/30 dev ${vethNS}
-        ${ip} link set ${vethNS} up
-        ${ip} link set lo up
-
-        # Disable IPv6 inside namespace to prevent IPv6 leaks
-        ${sysctl} -w net.ipv6.conf.all.disable_ipv6=1
-        ${sysctl} -w net.ipv6.conf.default.disable_ipv6=1
-
-        # Add default route through veth with low priority (metric 200)
-        # This allows OpenVPN to connect initially
-        # OpenVPN will add its own default route with metric 0, which takes precedence
-        ${ip} route add default via ${hostIP} dev ${vethNS} metric 200
-
-        # Add kill-switch: blackhole route as fallback if both VPN and default drop
-        # This has metric 999 so it only applies as absolute last resort
-        ${ip} route add blackhole 0.0.0.0/0 metric 999
-
-        # Add specific routes to direct LAN traffic through veth (metric 0, most preferred for LAN)
-        # These are more specific than default routes, so they always take precedence
-        ${lib.concatMapStringsSep "\n" (range:
-          "${ip} route add ${range} via ${hostIP} dev ${vethNS}"
-        ) privateLANRanges}
-
-        # Keep the namespace alive by sleeping forever
-        exec ${pkgs.coreutils}/bin/sleep infinity
-      '';
-
-      # Clean up veth pair on stop
-      ExecStopPost = "${ip} link delete ${vethHost} 2>/dev/null || true";
-
-      Restart = "on-failure";
-      RestartSec = "5s";
+      ExecStop = let
+        script = pkgs.writeShellScript "netns-destroy" ''
+          NETNS_NAME="$1"
+          # Delete veth pair (host side)
+          ${ip} link delete ${vethHost} 2>/dev/null || true
+          # Delete namespace (this also cleans up the veth inside)
+          ${ip} netns delete $NETNS_NAME 2>/dev/null || true
+        '';
+      in "${script} %I";
     };
   };
 
@@ -116,9 +110,8 @@ in
       Type = "notify";
       WorkingDirectory = "/etc/openvpn/pia";
 
-      # Join the VPN namespace
-      JoinsNamespaceOf = "netns@${namespaceName}.service";
-      PrivateNetwork = true;
+      # Use the persistent network namespace created by ip netns add
+      NetworkNamespacePath = "/var/run/netns/${namespaceName}";
 
       # OpenVPN will create tun0 inside the namespace
       ExecStart = "${pkgs.openvpn}/bin/openvpn --config /etc/openvpn/pia/pia.conf --auth-user-pass /etc/openvpn/pia/credentials.txt";
@@ -161,15 +154,14 @@ in
   };
 }
 
-# To configure a service to use this VPN namespace, use JoinsNamespaceOf:
+# To configure a service to use this VPN namespace, use NetworkNamespacePath:
 #
 #   systemd.services.<service-name> = {
 #     after = [ "openvpn-pia.service" ];
 #     requires = [ "openvpn-pia.service" ];
 #     bindsTo = [ "openvpn-pia.service" ];
 #     serviceConfig = {
-#       JoinsNamespaceOf = "netns@vpn.service";
-#       PrivateNetwork = true;
+#       NetworkNamespacePath = "/var/run/netns/vpn";
 #       # ... other service config ...
 #     };
 #   };
