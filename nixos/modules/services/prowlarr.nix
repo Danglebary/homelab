@@ -36,7 +36,7 @@
                 /mnt/vault/downloads
             ];
 
-            ExecStart   = "${pkgs.prowlarr}/bin/prowlarr -nobrowser --data=/var/lib/services/prowlarr";
+            ExecStart   = "${pkgs.prowlarr}/bin/Prowlarr -nobrowser --data=/var/lib/services/prowlarr";
             Environment = [ "TZ=America/Los_Angeles" ];
 
             # Security settings
