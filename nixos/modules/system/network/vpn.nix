@@ -132,7 +132,10 @@ in
         chain postrouting {
           type nat hook postrouting priority srcnat; policy accept;
 
-          # Masquerade (NAT) traffic from VPN namespace going to LAN only
+          # Masquerade OpenVPN traffic (UDP 1198) so VPN servers can respond
+          ip saddr ${vethSubnet} udp dport 1198 masquerade
+
+          # Masquerade (NAT) traffic from VPN namespace going to LAN
           # This makes traffic from namespace appear to come from the host
           ip saddr ${vethSubnet} ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } masquerade
         }
