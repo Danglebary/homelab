@@ -51,54 +51,63 @@ in
       # Allow writing to /var/run/netns for namespace exposure
       ReadWritePaths = [ "/var/run/netns" ];
 
-      ExecStart = pkgs.writeShellScript "netns-create" ''
-        set -e
+      # Required capabilities for network namespace and mount operations
+      AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_SYS_ADMIN" ];
 
-        # Expose the namespace so 'ip netns' commands can see it
-        # This bind mounts the namespace to /var/run/netns/<name>
-        mkdir -p /var/run/netns
-        touch /var/run/netns/%I
-        ${mount} --bind /proc/self/ns/net /var/run/netns/%I
+      ExecStart = let
+        script = pkgs.writeShellScript "netns-create" ''
+          set -e
+          NETNS_NAME="$1"
 
-        # Create veth pair to bridge namespace with host
-        ${ip} link add ${vethHost} type veth peer name ${vethNS}
+          # Expose the namespace so 'ip netns' commands can see it
+          # This bind mounts the namespace to /var/run/netns/<name>
+          mkdir -p /var/run/netns
+          touch /var/run/netns/$NETNS_NAME
+          ${mount} --bind /proc/self/ns/net /var/run/netns/$NETNS_NAME
 
-        # Move namespace-side veth into the network namespace
-        ${ip} link set ${vethNS} netns %I
+          # Create veth pair to bridge namespace with host
+          ${ip} link add ${vethHost} type veth peer name ${vethNS}
 
-        # Configure host-side veth interface
-        ${ip} addr add ${hostIP}/30 dev ${vethHost}
-        ${ip} link set ${vethHost} up
+          # Move namespace-side veth into the network namespace
+          ${ip} link set ${vethNS} netns $NETNS_NAME
 
-        # Configure namespace-side veth interface
-        ${ip} -n %I addr add ${nsIP}/30 dev ${vethNS}
-        ${ip} -n %I link set ${vethNS} up
-        ${ip} -n %I link set lo up
+          # Configure host-side veth interface
+          ${ip} addr add ${hostIP}/30 dev ${vethHost}
+          ${ip} link set ${vethHost} up
 
-        # Disable IPv6 inside namespace to prevent IPv6 leaks
-        ${ip} netns exec %I ${sysctl} -w net.ipv6.conf.all.disable_ipv6=1
-        ${ip} netns exec %I ${sysctl} -w net.ipv6.conf.default.disable_ipv6=1
+          # Configure namespace-side veth interface
+          ${ip} -n $NETNS_NAME addr add ${nsIP}/30 dev ${vethNS}
+          ${ip} -n $NETNS_NAME link set ${vethNS} up
+          ${ip} -n $NETNS_NAME link set lo up
 
-        # Add kill-switch: blackhole route as fallback if VPN drops
-        # This has metric 999 so it only applies if the default route via tun0 disappears
-        ${ip} -n %I route add blackhole 0.0.0.0/0 metric 999
+          # Disable IPv6 inside namespace to prevent IPv6 leaks
+          ${ip} netns exec $NETNS_NAME ${sysctl} -w net.ipv6.conf.all.disable_ipv6=1
+          ${ip} netns exec $NETNS_NAME ${sysctl} -w net.ipv6.conf.default.disable_ipv6=1
 
-        # Add routes in namespace to direct LAN traffic through veth
-        # (Internet traffic will use default route through tun0 set by OpenVPN)
-        # These routes are more specific than the blackhole, so they take precedence
-        ${lib.concatMapStringsSep "\n" (range:
-          "${ip} -n %I route add ${range} via ${hostIP} dev ${vethNS}"
-        ) privateLANRanges}
-      '';
+          # Add kill-switch: blackhole route as fallback if VPN drops
+          # This has metric 999 so it only applies if the default route via tun0 disappears
+          ${ip} -n $NETNS_NAME route add blackhole 0.0.0.0/0 metric 999
+
+          # Add routes in namespace to direct LAN traffic through veth
+          # (Internet traffic will use default route through tun0 set by OpenVPN)
+          # These routes are more specific than the blackhole, so they take precedence
+          ${lib.concatMapStringsSep "\n" (range:
+            "${ip} -n $NETNS_NAME route add ${range} via ${hostIP} dev ${vethNS}"
+          ) privateLANRanges}
+        '';
+      in "${script} %I";
 
       # Clean up namespace on stop
-      ExecStop = pkgs.writeShellScript "netns-destroy" ''
-        # Delete veth pair (automatically cleans up both ends)
-        ${ip} link delete ${vethHost} 2>/dev/null || true
-        # Unmount and clean up namespace
-        ${umount} /var/run/netns/%I 2>/dev/null || true
-        rm -f /var/run/netns/%I
-      '';
+      ExecStop = let
+        script = pkgs.writeShellScript "netns-destroy" ''
+          NETNS_NAME="$1"
+          # Delete veth pair (automatically cleans up both ends)
+          ${ip} link delete ${vethHost} 2>/dev/null || true
+          # Unmount and clean up namespace
+          ${umount} /var/run/netns/$NETNS_NAME 2>/dev/null || true
+          rm -f /var/run/netns/$NETNS_NAME
+        '';
+      in "${script} %I";
     };
   };
 
