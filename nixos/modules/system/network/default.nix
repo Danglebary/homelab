@@ -4,7 +4,6 @@
     imports = [
         ./cloudflared.nix
         ./nfs.nix
-        ./slices.nix
         ./ssh.nix
         ./vpn.nix
     ];

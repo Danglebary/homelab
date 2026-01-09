@@ -4,22 +4,20 @@
     systemd.services.prowlarr = {
         description = "Prowlarr Indexer Manager";
 
-        # Ensure the service starts after network and VPN is up
-        after = [
-            "network-online.target"
-            "openvpn-pia.service"
-        ];
-        wants = [
-            "network-online.target"
-            "openvpn-pia.service"
-        ];
+        # Ensure the service starts after VPN is up and bind lifecycle
+        after = [ "openvpn-pia.service" ];
+        requires = [ "openvpn-pia.service" ];
+        bindsTo = [ "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {
             # Identity
             User  = "prowlarr";
             Group = "services";
-            Slice = "vpn.slice";
+
+            # Run in VPN network namespace (all traffic forced through VPN)
+            JoinsNamespaceOf = "netns@vpn.service";
+            PrivateNetwork = true;
 
             # Paths that the service can read and write
             WorkingDirectory = "/var/lib/services/prowlarr";
