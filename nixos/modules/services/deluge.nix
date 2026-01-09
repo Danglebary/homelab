@@ -1,6 +1,17 @@
 { config, lib, pkgs, ... }:
 
 {
+    # Port forwarding from host to VPN namespace for Deluge web UI
+    networking.nftables.ruleset = ''
+      table inet nat {
+        chain prerouting {
+          type nat hook prerouting priority dstnat; policy accept;
+          # Forward Deluge web UI port to VPN namespace
+          tcp dport 8112 dnat to 10.200.200.2
+        }
+      }
+    '';
+
     systemd.services.deluge = {
         description = "Deluge Bittorrent Client Daemon";
 
