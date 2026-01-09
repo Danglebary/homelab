@@ -2,7 +2,7 @@
 
 {
     imports = [
-        # ./deluge.nix
+        ./deluge.nix
         # ./prowlarr.nix
         # ./radarr.nix
         # ./sonarr.nix
