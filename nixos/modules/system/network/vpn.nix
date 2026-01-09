@@ -145,8 +145,12 @@ in
           # Allow established/related connections (stateful firewall)
           ct state { established, related } accept
 
+          # Allow OpenVPN traffic (UDP port 1198) to reach VPN servers
+          # This is needed to establish the tunnel through the host network
+          iifname "${vethHost}" udp dport 1198 accept
+
           # Allow forwarding FROM veth ONLY to RFC1918 (LAN) destinations
-          # This blocks internet traffic when VPN is down (kill-switch)
+          # This blocks non-VPN internet traffic when VPN is down (kill-switch)
           iifname "${vethHost}" ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } accept
 
           # Allow forwarding TO veth from anywhere (return traffic)
