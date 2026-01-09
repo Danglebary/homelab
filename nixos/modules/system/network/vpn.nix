@@ -22,6 +22,7 @@ let
   ip = "${pkgs.iproute2}/bin/ip";
   mount = "${pkgs.util-linux}/bin/mount";
   umount = "${pkgs.util-linux}/bin/umount";
+  sysctl = "${pkgs.procps}/bin/sysctl";
 in
 {
   # Load TUN/TAP kernel module for VPN support
@@ -72,8 +73,8 @@ in
         ${ip} -n %I link set lo up
 
         # Disable IPv6 inside namespace to prevent IPv6 leaks
-        ${ip} netns exec %I sysctl -w net.ipv6.conf.all.disable_ipv6=1
-        ${ip} netns exec %I sysctl -w net.ipv6.conf.default.disable_ipv6=1
+        ${ip} netns exec %I ${sysctl} -w net.ipv6.conf.all.disable_ipv6=1
+        ${ip} netns exec %I ${sysctl} -w net.ipv6.conf.default.disable_ipv6=1
 
         # Add kill-switch: blackhole route as fallback if VPN drops
         # This has metric 999 so it only applies if the default route via tun0 disappears
