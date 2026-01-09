@@ -7,7 +7,7 @@
         chain prerouting {
           type nat hook prerouting priority dstnat; policy accept;
           # Forward Deluge web UI port to VPN namespace
-          tcp dport 8112 dnat to 10.200.200.2
+          tcp dport 8112 dnat ip to 10.200.200.2
         }
       }
     '';
