@@ -16,8 +16,7 @@
             Group = "services";
 
             # Run in VPN network namespace (all traffic forced through VPN)
-            JoinsNamespaceOf = "netns@vpn.service";
-            PrivateNetwork = true;
+            NetworkNamespacePath = "/var/run/netns/vpn";
 
             # Paths that the service can read and write
             WorkingDirectory = "/var/lib/services/sonarr";

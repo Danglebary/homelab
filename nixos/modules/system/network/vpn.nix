@@ -132,9 +132,9 @@ in
         chain postrouting {
           type nat hook postrouting priority srcnat; policy accept;
 
-          # Masquerade (NAT) traffic from VPN namespace going to LAN
+          # Masquerade (NAT) traffic from VPN namespace going to LAN only
           # This makes traffic from namespace appear to come from the host
-          ip saddr ${vethSubnet} oifname != "${vethHost}" masquerade
+          ip saddr ${vethSubnet} ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } masquerade
         }
       }
 
@@ -145,8 +145,11 @@ in
           # Allow established/related connections (stateful firewall)
           ct state { established, related } accept
 
-          # Allow forwarding traffic to/from the VPN namespace veth
-          iifname "${vethHost}" accept
+          # Allow forwarding FROM veth ONLY to RFC1918 (LAN) destinations
+          # This blocks internet traffic when VPN is down (kill-switch)
+          iifname "${vethHost}" ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } accept
+
+          # Allow forwarding TO veth from anywhere (return traffic)
           oifname "${vethHost}" accept
         }
       }
