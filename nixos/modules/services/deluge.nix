@@ -70,7 +70,7 @@
             WorkingDirectory = "/var/lib/services/deluge";
             ReadWritePaths = [ /var/lib/services/deluge ];
 
-            ExecStart = "${pkgs.deluge}/bin/deluge-web -c /var/lib/services/deluge";
+            ExecStart = "${pkgs.deluge}/bin/deluge-web -d -c /var/lib/services/deluge";
             Environment = [ "TZ=America/Los_Angeles" ];
 
             # Security settings
