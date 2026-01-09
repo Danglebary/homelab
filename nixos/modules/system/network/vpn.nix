@@ -20,6 +20,8 @@ let
   ];
 
   ip = "${pkgs.iproute2}/bin/ip";
+  mount = "${pkgs.util-linux}/bin/mount";
+  umount = "${pkgs.util-linux}/bin/umount";
 in
 {
   # Load TUN/TAP kernel module for VPN support
@@ -52,7 +54,7 @@ in
         # This bind mounts the namespace to /var/run/netns/<name>
         mkdir -p /var/run/netns
         touch /var/run/netns/%I
-        mount --bind /proc/self/ns/net /var/run/netns/%I
+        ${mount} --bind /proc/self/ns/net /var/run/netns/%I
 
         # Create veth pair to bridge namespace with host
         ${ip} link add ${vethHost} type veth peer name ${vethNS}
@@ -90,7 +92,7 @@ in
         # Delete veth pair (automatically cleans up both ends)
         ${ip} link delete ${vethHost} 2>/dev/null || true
         # Unmount and clean up namespace
-        umount /var/run/netns/%I 2>/dev/null || true
+        ${umount} /var/run/netns/%I 2>/dev/null || true
         rm -f /var/run/netns/%I
       '';
     };
