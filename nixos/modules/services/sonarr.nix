@@ -38,7 +38,7 @@
                 /mnt/vault/downloads
             ];
 
-            ExecStart   = "${pkgs.sonarr}/bin/sonarr -nobrowser --data=/var/lib/services/sonarr";
+            ExecStart   = "${pkgs.sonarr}/bin/Sonarr -nobrowser --data=/var/lib/services/sonarr";
             Environment = [ "TZ=America/Los_Angeles" ];
 
             # Security settings

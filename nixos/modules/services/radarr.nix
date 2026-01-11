@@ -37,7 +37,7 @@
                 /mnt/vault/downloads
             ];
 
-            ExecStart   = "${pkgs.radarr}/bin/radarr -nobrowser --data=/var/lib/services/radarr";
+            ExecStart   = "${pkgs.radarr}/bin/Radarr -nobrowser --data=/var/lib/services/radarr";
             Environment = [ "TZ=America/Los_Angeles" ];
 
             # Security settings
