@@ -33,7 +33,6 @@
             WorkingDirectory = "/var/lib/services/prowlarr";
             ReadWritePaths = [
                 /var/lib/services/prowlarr
-                /mnt/vault/downloads
             ];
 
             ExecStart   = "${pkgs.prowlarr}/bin/Prowlarr -nobrowser --data=/var/lib/services/prowlarr";

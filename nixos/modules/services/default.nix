@@ -4,7 +4,7 @@
     imports = [
         ./deluge.nix
         ./prowlarr.nix
-        # ./radarr.nix
+        ./radarr.nix
         # ./sonarr.nix
         # ./plex.nix
         # ./overseerr.nix
