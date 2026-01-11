@@ -21,6 +21,9 @@
         bindsTo = [ "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
+        # Set PATH to include deluge and extraction utilities (needed for plugins)
+        path = [ pkgs.deluge pkgs.unzip pkgs.gnutar pkgs.xz pkgs.bzip2 ];
+
         serviceConfig = {
             # Identity
             User = "deluge";
@@ -36,9 +39,9 @@
                 /mnt/vault/downloads
             ];
 
-            ExecStart   = "${pkgs.deluge}/bin/deluged -d -c /var/lib/services/deluge";
+            ExecStart   = "${pkgs.deluge}/bin/deluged --do-not-daemonize --config /var/lib/services/deluge";
             Environment = [ "TZ=America/Los_Angeles" ];
-            
+
             # Security settings
             RestrictRealtime = true;
             RestrictSUIDSGID = true;
@@ -69,6 +72,9 @@
         bindsTo = [ "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
+        # Set PATH to include deluge
+        path = [ pkgs.deluge ];
+
         serviceConfig = {
             # Identity
             User = "deluge";
@@ -81,7 +87,7 @@
             WorkingDirectory = "/var/lib/services/deluge";
             ReadWritePaths = [ /var/lib/services/deluge ];
 
-            ExecStart = "${pkgs.deluge}/bin/deluge-web -d -c /var/lib/services/deluge";
+            ExecStart = "${pkgs.deluge}/bin/deluge-web --do-not-daemonize --config /var/lib/services/deluge";
             Environment = [ "TZ=America/Los_Angeles" ];
 
             # Security settings
