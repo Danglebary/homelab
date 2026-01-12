@@ -32,6 +32,9 @@
             # Run in VPN network namespace (all traffic forced through VPN)
             NetworkNamespacePath = "/var/run/netns/vpn";
 
+            # Network capabilities for libtorrent to enumerate interfaces/routes
+            AmbientCapabilities = [ "CAP_NET_ADMIN" ];
+
             # Paths that the service can read and write
             WorkingDirectory = "/var/lib/services/deluge";
             ReadWritePaths = [
