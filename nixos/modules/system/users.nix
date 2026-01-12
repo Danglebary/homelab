@@ -50,6 +50,17 @@
             createHome = true;
         };
 
+        flaresolverr = {
+            isSystemUser = true;
+            description = "FlareSolverr service user account";
+
+            group = "services";
+            extraGroups = [ "vpn" ];
+
+            home = "/var/lib/services/flaresolverr";
+            createHome = true;
+        };
+
         radarr = {
             isSystemUser = true;
             description = "Radarr service user account";
