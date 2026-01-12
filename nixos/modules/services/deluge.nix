@@ -49,7 +49,7 @@
             # Security settings
             RestrictRealtime = true;
             RestrictSUIDSGID = true;
-            NoNewPrivileges  = true;
+            NoNewPrivileges  = false;  # Must be false for CAP_NET_ADMIN to work in network namespace
             LockPersonality  = true;
             ProtectSystem    = "strict";
             ProtectHome      = true;
