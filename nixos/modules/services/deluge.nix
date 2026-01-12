@@ -33,8 +33,8 @@
             NetworkNamespacePath = "/var/run/netns/vpn";
 
             # Network capabilities for libtorrent to enumerate interfaces/routes
-            AmbientCapabilities = [ "CAP_NET_ADMIN" ];
-            CapabilityBoundingSet = [ "CAP_NET_ADMIN" ];
+            AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_NET_RAW" ];
+            CapabilityBoundingSet = [ "CAP_NET_ADMIN" "CAP_NET_RAW" ];
 
             # Paths that the service can read and write
             WorkingDirectory = "/var/lib/services/deluge";
