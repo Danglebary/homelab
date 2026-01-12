@@ -39,7 +39,7 @@
                 /mnt/vault/downloads
             ];
 
-            ExecStart   = "${pkgs.deluge}/bin/deluged -d -L debug --do-not-daemonize --config /var/lib/services/deluge";
+            ExecStart   = "${pkgs.deluge}/bin/deluged --do-not-daemonize --config /var/lib/services/deluge";
             Environment = [ "TZ=America/Los_Angeles" ];
 
             # Security settings
@@ -51,8 +51,8 @@
             ProtectHome      = true;
             PrivateTmp       = true;
 
-            # Restrict network access to only necessary address families
-            RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
+            # Restrict network access to only necessary address families (IPv4 only, VPN namespace has IPv6 disabled)
+            RestrictAddressFamilies = [ "AF_INET" "AF_UNIX" ];
 
             # Restart always (including when VPN restarts)
             Restart    = "always";
@@ -99,8 +99,8 @@
             ProtectHome = true;
             PrivateTmp = true;
 
-            # Restrict network access to only necessary address families
-            RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
+            # Restrict network access to only necessary address families (IPv4 only, VPN namespace has IPv6 disabled)
+            RestrictAddressFamilies = [ "AF_INET" "AF_UNIX" ];
 
             # Restart always (including when VPN restarts)
             Restart = "always";
