@@ -55,8 +55,9 @@
             ProtectHome      = true;
             PrivateTmp       = true;
 
-            # Restrict network access to only necessary address families (IPv4 only, VPN namespace has IPv6 disabled)
-            RestrictAddressFamilies = [ "AF_INET" "AF_UNIX" ];
+            # Restrict network access to only necessary address families
+            # Note: AF_INET6 needed for libtorrent interface enumeration even with IPv6 disabled
+            RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
 
             # Restart always (including when VPN restarts)
             Restart    = "always";
