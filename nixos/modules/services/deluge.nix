@@ -46,18 +46,15 @@
             ExecStart   = "${pkgs.deluge}/bin/deluged -d -L debug --do-not-daemonize --config /var/lib/services/deluge";
             Environment = [ "TZ=America/Los_Angeles" ];
 
-            # Security settings
-            RestrictRealtime = true;
-            RestrictSUIDSGID = true;
-            NoNewPrivileges  = false;  # Must be false for CAP_NET_ADMIN to work in network namespace
-            LockPersonality  = true;
-            ProtectSystem    = "strict";
-            ProtectHome      = true;
-            PrivateTmp       = true;
-
-            # Restrict network access to only necessary address families
-            # Note: AF_INET6 needed for libtorrent interface enumeration even with IPv6 disabled
-            RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
+            # Security settings - TEMPORARILY DISABLED FOR DEBUGGING
+            # RestrictRealtime = true;
+            # RestrictSUIDSGID = true;
+            # NoNewPrivileges  = false;
+            # LockPersonality  = true;
+            # ProtectSystem    = "strict";
+            # ProtectHome      = true;
+            # PrivateTmp       = true;
+            # RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
 
             # Restart always (including when VPN restarts)
             Restart    = "always";
