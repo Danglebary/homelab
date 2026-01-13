@@ -16,8 +16,8 @@
         description = "Prowlarr Indexer Manager";
 
         # Ensure the service starts after VPN is up
-        after = [ "openvpn-pia.service" ];
-        requires = [ "openvpn-pia.service" ];
+        after = [ "openvpn-pia.service" "flaresolverr.service" ];
+        wants = [ "openvpn-pia.service" "flaresolverr.service" ];
         wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {

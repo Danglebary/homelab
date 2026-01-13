@@ -6,7 +6,7 @@
 
         # Ensure the service starts after VPN is up
         after = [ "openvpn-pia.service" ];
-        requires = [ "openvpn-pia.service" ];
+        wants = [ "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {

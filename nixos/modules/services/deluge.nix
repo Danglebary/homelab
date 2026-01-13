@@ -17,7 +17,7 @@
 
         # Ensure the service starts after VPN is up
         after = [ "openvpn-pia.service" ];
-        requires = [ "openvpn-pia.service" ];
+        wants = [ "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
         # Set PATH to include deluge and extraction utilities (needed for plugins)
@@ -72,8 +72,10 @@
         description = "Deluge Web UI";
 
         # Ensure the service starts after deluged and VPN is up
+        # Using 'wants' for VPN, but 'requires' for deluge daemon (web UI needs daemon)
         after = [ "deluge.service" "openvpn-pia.service" ];
-        requires = [ "deluge.service" "openvpn-pia.service" ];
+        requires = [ "deluge.service" ];
+        wants = [ "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
         # Set PATH to include deluge
