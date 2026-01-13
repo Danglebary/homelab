@@ -46,15 +46,17 @@
             ExecStart   = "${pkgs.deluge}/bin/deluged -d -L debug --do-not-daemonize --config /var/lib/services/deluge";
             Environment = [ "TZ=America/Los_Angeles" ];
 
-            # Security settings - Adding back one by one to identify culprit
+            # Security settings
             RestrictRealtime = true;
             RestrictSUIDSGID = true;
-            LockPersonality  = true;
-            PrivateTmp       = true;
-            ProtectHome      = true;
             NoNewPrivileges  = true;
+            LockPersonality  = true;
             ProtectSystem    = "strict";
-            # RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
+            ProtectHome      = true;
+            PrivateTmp       = true;
+
+            # RestrictAddressFamilies blocks libtorrent's interface enumeration (TESTING)
+            RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
 
             # Restart always (including when VPN restarts)
             Restart    = "always";
