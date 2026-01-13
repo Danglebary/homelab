@@ -50,10 +50,10 @@
             RestrictRealtime = true;
             RestrictSUIDSGID = true;
             LockPersonality  = true;
+            PrivateTmp       = true;
+            ProtectHome      = true;
             # NoNewPrivileges  = false;
             # ProtectSystem    = "strict";
-            # ProtectHome      = true;
-            # PrivateTmp       = true;
             # RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
 
             # Restart always (including when VPN restarts)
