@@ -46,11 +46,11 @@
             ExecStart   = "${pkgs.deluge}/bin/deluged -d -L debug --do-not-daemonize --config /var/lib/services/deluge";
             Environment = [ "TZ=America/Los_Angeles" ];
 
-            # Security settings - TEMPORARILY DISABLED FOR DEBUGGING
-            # RestrictRealtime = true;
-            # RestrictSUIDSGID = true;
+            # Security settings - Adding back one by one to identify culprit
+            RestrictRealtime = true;
+            RestrictSUIDSGID = true;
+            LockPersonality  = true;
             # NoNewPrivileges  = false;
-            # LockPersonality  = true;
             # ProtectSystem    = "strict";
             # ProtectHome      = true;
             # PrivateTmp       = true;
