@@ -55,8 +55,9 @@
             ProtectHome      = true;
             PrivateTmp       = true;
 
-            # RestrictAddressFamilies blocks libtorrent's interface enumeration (TESTING)
-            RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
+            # Restrict network access to necessary address families
+            # AF_NETLINK required for libtorrent's interface enumeration
+            RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" "AF_NETLINK" ];
 
             # Restart always (including when VPN restarts)
             Restart    = "always";
