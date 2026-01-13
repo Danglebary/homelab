@@ -15,10 +15,9 @@
     systemd.services.prowlarr = {
         description = "Prowlarr Indexer Manager";
 
-        # Ensure the service starts after VPN is up and bind lifecycle
+        # Ensure the service starts after VPN is up
         after = [ "openvpn-pia.service" ];
         requires = [ "openvpn-pia.service" ];
-        bindsTo = [ "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {

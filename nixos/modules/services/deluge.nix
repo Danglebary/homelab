@@ -15,10 +15,9 @@
     systemd.services.deluge = {
         description = "Deluge Bittorrent Client Daemon";
 
-        # Ensure the service starts after VPN is up and bind lifecycle
+        # Ensure the service starts after VPN is up
         after = [ "openvpn-pia.service" ];
         requires = [ "openvpn-pia.service" ];
-        bindsTo = [ "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
         # Set PATH to include deluge and extraction utilities (needed for plugins)
@@ -75,7 +74,6 @@
         # Ensure the service starts after deluged and VPN is up
         after = [ "deluge.service" "openvpn-pia.service" ];
         requires = [ "deluge.service" "openvpn-pia.service" ];
-        bindsTo = [ "openvpn-pia.service" ];
         wantedBy = [ "multi-user.target" ];
 
         # Set PATH to include deluge
