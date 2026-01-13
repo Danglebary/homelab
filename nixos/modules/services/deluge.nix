@@ -57,7 +57,8 @@
 
             # Restrict network access to necessary address families
             # AF_NETLINK required for libtorrent's interface enumeration
-            RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" "AF_NETLINK" ];
+            # AF_INET6 removed since VPN namespace has IPv6 disabled
+            RestrictAddressFamilies = [ "AF_INET" "AF_UNIX" "AF_NETLINK" ];
 
             # Restart always (including when VPN restarts)
             Restart    = "always";
