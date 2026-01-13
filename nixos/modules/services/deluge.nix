@@ -53,7 +53,7 @@
             PrivateTmp       = true;
             ProtectHome      = true;
             NoNewPrivileges  = true;
-            # ProtectSystem    = "strict";
+            ProtectSystem    = "strict";
             # RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
 
             # Restart always (including when VPN restarts)
