@@ -52,7 +52,7 @@
             LockPersonality  = true;
             PrivateTmp       = true;
             ProtectHome      = true;
-            # NoNewPrivileges  = false;
+            NoNewPrivileges  = true;
             # ProtectSystem    = "strict";
             # RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
 
