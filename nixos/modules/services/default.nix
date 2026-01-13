@@ -6,7 +6,7 @@
         ./prowlarr.nix
         ./flaresolverr.nix
         ./radarr.nix
-        # ./sonarr.nix
+        ./sonarr.nix
         # ./plex.nix
         # ./overseerr.nix
     ];
