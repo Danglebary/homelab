@@ -19,7 +19,10 @@
             ReadWritePaths   = [ "/var/lib/services/overseerr" ];
 
             # Overseerr environment variables
-            Environment = [ "TZ=America/Los_Angeles" ];
+            Environment = [
+                "TZ=America/Los_Angeles"
+                "CONFIG_DIRECTORY=/var/lib/services/overseerr"
+            ];
 
             ExecStart = "${pkgs.overseerr}/bin/overseerr";
 
