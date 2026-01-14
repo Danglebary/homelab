@@ -31,9 +31,10 @@
             AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
 
             # Security settings
+            # Note: NoNewPrivileges and RestrictSUIDSGID are omitted because
+            # Plex uses bubblewrap (bwrap) for internal sandboxing which requires
+            # the ability to manage capabilities
             RestrictRealtime = true;
-            RestrictSUIDSGID = true;
-            NoNewPrivileges  = true;
             LockPersonality  = true;
             ProtectSystem    = "strict";
             ProtectHome      = true;
