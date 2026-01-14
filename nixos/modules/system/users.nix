@@ -137,5 +137,16 @@
             home = "/var/lib/services/cloudflared";
             createHome = true;
         };
+
+        homepage = {
+            isSystemUser = true;
+            description = "Homepage service user account";
+
+            group = "services";
+            extraGroups = [];
+
+            home = "/var/lib/services/homepage";
+            createHome = true;
+        };
     };
 }

@@ -1,0 +1,19 @@
+title: Homelab Dashboard
+favicon: https://gethomepage.dev/img/favicon.ico
+background:
+  image: /images/background.png
+  blur: sm
+  saturate: 50
+  brightness: 50
+  opacity: 50
+
+theme: dark
+color: slate
+headerStyle: boxed
+layout:
+  Media Services:
+    style: row
+    columns: 2
+  Download Management:
+    style: row
+    columns: 4

@@ -7,6 +7,7 @@
         ./flaresolverr.nix
         ./radarr.nix
         ./sonarr.nix
+        ./homepage.nix
         # ./plex.nix
         # ./overseerr.nix
     ];

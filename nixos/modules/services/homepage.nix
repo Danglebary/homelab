@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
 {
-    systemd.services.plex = {
-        description = "Plex Media Server";
+    systemd.services.homepage = {
+        description = "Homepage Dashboard";
 
         # Ensure the service starts after network is up
         after    = [ "network-online.target" ];
@@ -11,24 +11,21 @@
 
         serviceConfig = {
             # Identity
-            User  = "plex";
+            User  = "homepage";
             Group = "services";
 
             # Paths that the service can read and write
-            WorkingDirectory = "/var/lib/services/plex";
-            ReadWritePaths   = [ "/var/lib/services/plex" ];
-            ReadOnlyPaths    = [ "/mnt/vault/media" ];
+            WorkingDirectory = "/var/lib/services/homepage";
+            ReadWritePaths   = [ "/var/lib/services/homepage" ];
 
-            ExecStart = "${pkgs.plex}/bin/plexmediaserver";
+            # Homepage environment variables
             Environment = [
-                "PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=/var/lib/services/plex"
-                "PLEX_MEDIA_SERVER_HOME=${pkgs.plex}/lib/plexmediaserver"
                 "TZ=America/Los_Angeles"
+                "PORT=3000"
+                "HOMEPAGE_CONFIG_DIR=/var/lib/services/homepage"
             ];
 
-
-            # Allow binding to privileged ports (32400)
-            AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+            ExecStart = "${pkgs.homepage-dashboard}/bin/homepage";
 
             # Security settings
             RestrictRealtime = true;
@@ -42,18 +39,12 @@
             # Restrict network access to only necessary address families
             RestrictAddressFamilies = [ "AF_INET" "AF_UNIX" ];
 
-            # Allow access to GPU devices for hardware transcoding
-            DeviceAllow = [
-                "/dev/dri/renderD128 rw"  # Intel/AMD GPU
-                "/dev/dri/card0 rw"       # GPU card
-            ];
-
             # Restart on failure
             Restart    = "on-failure";
             RestartSec = "5s";
 
             # Graceful shutdown
-            TimeoutStopSec = "300s"; # Allow up to 5 minutes to shut down
+            TimeoutStopSec = "120s"; # Allow up to 2 minutes to shut down
         };
     };
 }
