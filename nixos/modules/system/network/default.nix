@@ -46,6 +46,7 @@
         # Allow inbound TCP ports
         allowedTCPPorts = [
             22    # SSH
+            3000  # Homepage Dashboard
             32400 # Plex
         ];
     };
