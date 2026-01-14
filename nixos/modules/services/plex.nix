@@ -26,10 +26,6 @@
                 "TZ=America/Los_Angeles"
             ];
 
-
-            # Allow binding to privileged ports (32400)
-            AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
-
             # Security settings
             # Note: NoNewPrivileges and RestrictSUIDSGID are omitted because
             # Plex uses bubblewrap (bwrap) for internal sandboxing which requires
