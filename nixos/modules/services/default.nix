@@ -3,12 +3,12 @@
 {
     imports = [
         ./deluge.nix
-        ./prowlarr.nix
         ./flaresolverr.nix
+        ./prowlarr.nix
         ./radarr.nix
         ./sonarr.nix
-        ./homepage.nix
-        # ./plex.nix
         ./overseerr.nix
+        ./plex.nix
+        ./homepage.nix
     ];
 }
