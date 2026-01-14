@@ -23,7 +23,7 @@
                 "TZ=America/Los_Angeles"
                 "PORT=3000"
                 "HOMEPAGE_CONFIG_DIR=/var/lib/services/homepage"
-                "HOMEPAGE_ALLOWED_HOSTS=homelab-hl15.local,192.168.68.100,localhost"
+                "HOMEPAGE_ALLOWED_HOSTS=localhost:3000,127.0.0.1:3000,192.168.68.100:3000,homelab-hl15.local:3000"
             ];
 
             ExecStart = "${pkgs.homepage-dashboard}/bin/homepage";
