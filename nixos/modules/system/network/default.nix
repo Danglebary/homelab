@@ -48,6 +48,7 @@
             22    # SSH
             3000  # Homepage Dashboard
             32400 # Plex
+            5055  # Overseerr
         ];
     };
 
