@@ -9,7 +9,7 @@
         href: http://homelab-hl15.local:5055
         description: Media request management
 
-- Download Management:
+- "*Arr Services":
     - Deluge:
         icon: deluge.png
         href: http://homelab-hl15.local:8112

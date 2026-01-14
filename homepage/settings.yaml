@@ -14,6 +14,6 @@ layout:
   Media Services:
     style: row
     columns: 2
-  Download Management:
+  "*Arr Services":
     style: row
     columns: 4
