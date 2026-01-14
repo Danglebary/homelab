@@ -1,7 +1,7 @@
-title: Homelab Dashboard
+title: Halfblown's Homelab
 favicon: https://gethomepage.dev/img/favicon.ico
 background:
-  image: /images/background.png
+  image: /var/lib/services/homepage/images/ghibli_wallpaper.png
   blur: sm
   saturate: 50
   brightness: 50

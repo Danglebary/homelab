@@ -17,6 +17,7 @@
             # Paths that the service can read and write
             WorkingDirectory = "/var/lib/services/homepage";
             ReadWritePaths   = [ "/var/lib/services/homepage" ];
+            CacheDirectory   = "homepage-dashboard";
 
             # Homepage environment variables
             Environment = [
