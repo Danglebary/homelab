@@ -24,6 +24,7 @@
                 "PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=/var/lib/services/plex"
                 "PLEX_MEDIA_SERVER_HOME=${pkgs.plex}/lib/plexmediaserver"
                 "TZ=America/Los_Angeles"
+                "LD_LIBRARY_PATH="
             ];
 
             # Security settings
