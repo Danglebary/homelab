@@ -1,7 +1,7 @@
 title: Halfblown's Homelab
 favicon: https://gethomepage.dev/img/favicon.ico
 background:
-  image: /images/ghibli_wallpaper.jpg
+  image: https://wallpaperbat.com/img/82218000-studio-ghibli-hd-wallpaper.jpg
   blur: sm
   saturate: 50
   brightness: 50

@@ -18,9 +18,6 @@
             WorkingDirectory = "/var/lib/services/homepage";
             ReadWritePaths   = [ "/var/lib/services/homepage" ];
             CacheDirectory   = "homepage-dashboard";
-            BindReadOnlyPaths = [
-                "/var/lib/services/homepage/public:${pkgs.homepage-dashboard}/public"
-            ];
 
             # Homepage environment variables
             Environment = [
