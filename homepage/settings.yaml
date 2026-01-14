@@ -3,9 +3,9 @@ favicon: https://gethomepage.dev/img/favicon.ico
 background:
   image: https://wallpaperbat.com/img/82218000-studio-ghibli-hd-wallpaper.jpg
   blur: sm
-  saturate: 50
-  brightness: 50
-  opacity: 50
+  saturate: 75
+  brightness: 75
+  opacity: 60
 
 theme: dark
 color: slate
