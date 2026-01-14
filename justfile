@@ -2,6 +2,11 @@
 default:
     just --list
 
+# repo-related commands
+pull:
+    git fetch
+    git pull
+
 # NixOS System Management Commands
 
 # Sync nixos configuration from repo to system location
