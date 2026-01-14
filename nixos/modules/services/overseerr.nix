@@ -24,7 +24,8 @@
                 "CONFIG_DIRECTORY=/var/lib/services/overseerr"
             ];
 
-            ExecStart = "${pkgs.overseerr}/bin/overseerr";
+            ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p /var/lib/services/overseerr/db";
+            ExecStart    = "${pkgs.overseerr}/bin/overseerr";
 
             # Security settings
             RestrictRealtime = true;
