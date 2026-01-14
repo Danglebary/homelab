@@ -21,7 +21,7 @@ A production-quality homelab setup that provides:
 
 - **OS**: NixOS with Flakes for declarative, reproducible configuration
 - **Storage**: ZFS for data integrity, snapshots, and compression
-- **Containers**: Docker Compose for service orchestration
+- **Services**: systemd units with VPN namespace isolation
 - **Remote Access**: Cloudflare tunnels for zero-trust access
 - **Networking**: LACP bonding with VPN isolation for security
 

@@ -1,0 +1,31 @@
+- Media Services:
+    - Plex:
+        icon: plex.png
+        href: http://homelab-hl15:32400/web
+        description: Media streaming server
+
+    - Overseerr:
+        icon: overseerr.png
+        href: http://homelab-hl15:5055
+        description: Media request management
+
+- Download Management:
+    - Deluge:
+        icon: deluge.png
+        href: http://homelab-hl15:8112
+        description: Torrent client
+
+    - Prowlarr:
+        icon: prowlarr.png
+        href: http://homelab-hl15:9696
+        description: Indexer manager
+
+    - Radarr:
+        icon: radarr.png
+        href: http://homelab-hl15:7878
+        description: Movie automation
+
+    - Sonarr:
+        icon: sonarr.png
+        href: http://homelab-hl15:8989
+        description: TV show automation
