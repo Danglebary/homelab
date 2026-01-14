@@ -18,13 +18,15 @@
             WorkingDirectory = "/var/lib/services/homepage";
             ReadWritePaths   = [ "/var/lib/services/homepage" ];
             CacheDirectory   = "homepage-dashboard";
+            BindReadOnlyPaths = [
+                "/var/lib/services/homepage/public:${pkgs.homepage-dashboard}/public"
+            ];
 
             # Homepage environment variables
             Environment = [
                 "TZ=America/Los_Angeles"
                 "PORT=3000"
                 "HOMEPAGE_CONFIG_DIR=/var/lib/services/homepage"
-                "HOMEPAGE_PUBLIC_DIR=/var/lib/services/homepage/public"
                 "HOMEPAGE_ALLOWED_HOSTS=localhost:3000,127.0.0.1:3000,192.168.68.100:3000,homelab-hl15.local:3000"
             ];
 
