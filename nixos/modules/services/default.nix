@@ -9,6 +9,6 @@
         ./sonarr.nix
         ./homepage.nix
         # ./plex.nix
-        # ./overseerr.nix
+        ./overseerr.nix
     ];
 }
