@@ -2,6 +2,7 @@
 
 {
     imports = [
+        ./avahi.nix
         ./cloudflared.nix
         ./nfs.nix
         ./ssh.nix
