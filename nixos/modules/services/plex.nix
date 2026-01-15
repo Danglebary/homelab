@@ -28,7 +28,7 @@
             ];
 
             # Security settings
-            # RestrictRealtime = true;
+            RestrictRealtime = true;
             # RestrictSUIDSGID = true;
             # NoNewPrivileges  = true;
             # LockPersonality  = true;
