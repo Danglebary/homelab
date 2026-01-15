@@ -37,7 +37,7 @@
             PrivateTmp       = true;
 
             # Restrict network access to only necessary address families
-            # RestrictAddressFamilies = [ "AF_INET" "AF_UNIX" ];
+            RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
 
             # Allow access to GPU devices for hardware transcoding
             DeviceAllow = [
