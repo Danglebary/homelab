@@ -31,7 +31,7 @@
             RestrictRealtime = true;
             RestrictSUIDSGID = true;
             NoNewPrivileges  = true;
-            # LockPersonality  = true;
+            LockPersonality  = true;
             # ProtectSystem    = "strict";
             # ProtectHome      = true;
             # PrivateTmp       = true;
