@@ -30,7 +30,7 @@
             # Security settings
             RestrictRealtime = true;
             RestrictSUIDSGID = true;
-            # NoNewPrivileges  = true;
+            NoNewPrivileges  = true;
             # LockPersonality  = true;
             # ProtectSystem    = "strict";
             # ProtectHome      = true;
