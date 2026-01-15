@@ -29,7 +29,7 @@
 
             # Security settings
             RestrictRealtime = true;
-            # RestrictSUIDSGID = true;
+            RestrictSUIDSGID = true;
             # NoNewPrivileges  = true;
             # LockPersonality  = true;
             # ProtectSystem    = "strict";
