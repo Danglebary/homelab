@@ -34,7 +34,7 @@
             LockPersonality  = true;
             # ProtectSystem    = "strict";
             ProtectHome      = true;
-            # PrivateTmp       = true;
+            PrivateTmp       = true;
 
             # Restrict network access to only necessary address families
             # RestrictAddressFamilies = [ "AF_INET" "AF_UNIX" ];
