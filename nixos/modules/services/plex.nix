@@ -32,7 +32,7 @@
             RestrictSUIDSGID = true;
             NoNewPrivileges  = true;
             LockPersonality  = true;
-            # ProtectSystem    = "strict";
+            ProtectSystem    = "strict";
             ProtectHome      = true;
             PrivateTmp       = true;
 
