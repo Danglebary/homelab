@@ -28,17 +28,16 @@
             ];
 
             # Security settings
-            # Note: NoNewPrivileges and RestrictSUIDSGID are omitted because
-            # Plex uses bubblewrap (bwrap) for internal sandboxing which requires
-            # the ability to manage capabilities
-            RestrictRealtime = true;
-            LockPersonality  = true;
-            ProtectSystem    = "strict";
-            ProtectHome      = true;
-            PrivateTmp       = true;
+            # RestrictRealtime = true;
+            # RestrictSUIDSGID = true;
+            # NoNewPrivileges  = true;
+            # LockPersonality  = true;
+            # ProtectSystem    = "strict";
+            # ProtectHome      = true;
+            # PrivateTmp       = true;
 
             # Restrict network access to only necessary address families
-            RestrictAddressFamilies = [ "AF_INET" "AF_UNIX" ];
+            # RestrictAddressFamilies = [ "AF_INET" "AF_UNIX" ];
 
             # Allow access to GPU devices for hardware transcoding
             DeviceAllow = [

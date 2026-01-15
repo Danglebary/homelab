@@ -8,7 +8,7 @@
         ./radarr.nix
         ./sonarr.nix
         ./overseerr.nix
-        # ./plex.nix
+        ./plex.nix
         ./homepage.nix
     ];
 }
