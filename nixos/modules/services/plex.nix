@@ -33,7 +33,7 @@
             NoNewPrivileges  = true;
             LockPersonality  = true;
             # ProtectSystem    = "strict";
-            # ProtectHome      = true;
+            ProtectHome      = true;
             # PrivateTmp       = true;
 
             # Restrict network access to only necessary address families
