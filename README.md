@@ -1,30 +1,133 @@
 # Homelab - HL15 Media Server & Self-Hosting Setup
 
-A comprehensive homelab built on an HL15 2.0 server for media streaming and self-hosting services.
-
-## What This Is
-
-A production-quality homelab setup that provides:
-- **Media Services**: Automated media management and streaming for friends and family
-- **Self-Hosting Services**: Personal cloud services and file sharing
-- **Remote Access**: Secure external access through Cloudflare Zero Trust
-- **Modern Infrastructure**: Built with ZFS, NixOS, and containerized services
+A NixOS-based homelab built on an HL15 2.0 server for media streaming and self-hosting services.
 
 ## Hardware
 
 - **Server**: HL15 2.0 from 45HomeLab
-- **Storage**: ZFS pool for media storage with NVMe drives for OS and configs
-- **Network**: Bonded connection with managed switching
-- **GPU**: Hardware transcoding support
+- **Storage**: ZFS pool with mirrored vdevs for media, NVMe for OS/configs/cache
+- **Network**: Dual NICs bonded via LACP
+- **GPU**: Hardware transcoding support for Plex
 
-## Technology Stack
+## Architecture Overview
 
-- **OS**: NixOS with Flakes for declarative, reproducible configuration
-- **Storage**: ZFS for data integrity, snapshots, and compression
-- **Services**: systemd units with VPN namespace isolation
-- **Remote Access**: Cloudflare tunnels for zero-trust access
-- **Networking**: LACP bonding with VPN isolation for security
+```
+                                    Internet
+                                        │
+                              ┌─────────┴─────────┐
+                              │  Cloudflare Zero  │
+                              │      Trust        │
+                              └─────────┬─────────┘
+                                        │
+┌───────────────────────────────────────┴───────────────────────────────────┐
+│                           Host (192.168.68.100)                           │
+│                                                                           │
+│  ┌─────────────────────────────┐    ┌──────────────────────────────────┐  │
+│  │      Host Services          │    │        VPN Namespace             │  │
+│  │                             │    │                                  │  │
+│  │  • Plex (media streaming)   │    │  ┌────────────────────────────┐  │  │
+│  │  • Overseerr (requests)     │    │  │     OpenVPN (PIA)          │  │  │
+│  │  • Homepage (dashboard)     │    │  │     tun0 interface         │  │  │
+│  │  • Cloudflared (tunnel)     │    │  └────────────┬───────────────┘  │  │
+│  │                             │    │               │                  │  │
+│  │                             │◄───┼───veth pair───┤                  │  │
+│  │                             │    │               │                  │  │
+│  │                             │    │  • Deluge (linux ISOs)           │  │
+│  │                             │    │  • Radarr (movies)               │  │
+│  │                             │    │  • Sonarr (TV shows)             │  │
+│  │                             │    │  • Prowlarr (indexers)           │  │
+│  │                             │    │  • FlareSolverr                  │  │
+│  └─────────────────────────────┘    └──────────────────────────────────┘  │
+│                                                                           │
+│  bond0 (eno1 + eno2, LACP 802.3ad)                                        │
+└───────────────────────────────────────────────────────────────────────────┘
+                                        │
+                              ┌─────────┴─────────┐
+                              │   Home Network    │
+                              │  192.168.68.0/24  │
+                              └───────────────────┘
+```
 
-## Goals
+## NixOS Configuration Structure
 
-Create a stable, maintainable homelab that friends and family can use for media streaming and file sharing. Focus on reliability and security over cutting-edge experimentation.
+```
+nixos/
+├── flake.nix                 # Flake definition with inputs
+├── configuration.nix         # Root config, imports modules
+├── hardware-configuration.nix
+└── modules/
+    ├── system/
+    │   ├── file-system/      # ZFS pool, snapshots, tmpfiles
+    │   ├── network/          # Networking, VPN namespace, firewall, CF tunnel
+    │   ├── users.nix         # User accounts
+    │   └── groups.nix        # Shared permission groups
+    └── services/             # One file per service
+        ├── plex.nix
+        ├── deluge.nix
+        ├── radarr.nix
+        └── ...
+```
+
+Each service is a standalone module that can be enabled/disabled. Services define their own systemd units, users, and directory requirements.
+
+## Key Design Decisions
+
+### VPN Namespace Isolation
+
+Download services (Deluge, Radarr, Sonarr, Prowlarr) run in an isolated network namespace where all traffic is forced through a VPN tunnel. A kill-switch (blackhole route) prevents any traffic from leaking if the VPN drops.
+IPV6 is disabled in the namespace to also prevent leaks.
+
+The namespace connects to the host via a veth pair, allowing:
+- Web UIs to be accessed from the local network
+- Services to reach local storage (NFS, ZFS)
+- All outbound internet traffic to go through the VPN
+
+### Systemd Service Hardening
+
+All services run with hardened systemd settings:
+- `ProtectSystem=strict` - Read-only filesystem except allowed paths
+- `PrivateTmp=true` - Isolated /tmp
+- `NoNewPrivileges=true` - Can't gain additional privileges
+- `RestrictAddressFamilies` - Limited to required socket types
+- Network namespace binding for VPN services
+
+### Storage Layout
+
+```
+/mnt/vault/                   # ZFS pool
+├── media/
+│   ├── movies/
+│   ├── shows/
+│   └── anime/
+└── downloads/
+    ├── incomplete/
+    └── complete/
+
+/var/lib/services/            # Service state/configs
+├── plex/
+├── radarr/
+└── ...
+```
+
+ZFS provides automatic snapshots, scrubbing, and compression. Media and downloads are on the pool; service configs are on faster NVMe storage.
+
+### Remote Access
+
+Cloudflare Zero Trust tunnel provides secure external access without exposing ports to the internet. Only Overseerr is exposed externally for media requests currently.
+
+## Running Commands
+
+The `justfile` provides common operations:
+
+```bash
+just sys-up-test  # NixOS system rebuild dry-run
+just sys-up       # Rebuild and switch to new NixOS config
+just sys-down     # Rollback to previous NixOS config
+just hp-up        # Update HomePage config
+just pull         # Fetch & pull latest changes from git
+```
+
+## Documentation
+
+- [Cloudflare Tunnel Setup](docs/cloudflare_tunnel_setup_guide.md)
+- [ZFS Pool Expansion](docs/zfs_pool_expansion_guide.md)
