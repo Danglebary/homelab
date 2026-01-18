@@ -1,0 +1,59 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1a1a2e', 'primaryTextColor': '#eee', 'primaryBorderColor': '#7c3aed', 'lineColor': '#7c3aed', 'secondaryColor': '#16213e', 'tertiaryColor': '#0f3460'}}}%%
+
+flowchart TB
+    subgraph Internet["Internet"]
+        CF["Cloudflare Zero Trust"]
+        PIA["PIA VPN"]
+    end
+
+    subgraph LAN["Home Network"]
+        CLIENTS["LAN Clients"]
+    end
+
+    subgraph HOST["homelab-hl15"]
+        subgraph HOST_SERVICES["Direct Network"]
+            PLEX["Plex"]
+            HOMEPAGE["Homepage"]
+            OVERSEERR["Overseerr"]
+            NFS["NFS Server"]
+        end
+
+        subgraph VPN_NS["VPN-Isolated Network"]
+            DELUGE["Deluge"]
+            PROWLARR["Prowlarr"]
+            RADARR["Radarr"]
+            SONARR["Sonarr"]
+            FLARESOLVERR["FlareSolverr"]
+        end
+
+        subgraph STORAGE["ZFS Storage"]
+            MEDIA["Media Library"]
+            DOWNLOADS["Downloads"]
+        end
+    end
+
+    %% Internet connections
+    CF <-->|"requests.halfblown.dev"| OVERSEERR
+    PIA <-->|"encrypted tunnel"| VPN_NS
+
+    %% LAN access
+    CLIENTS --> PLEX
+    CLIENTS --> HOMEPAGE
+    CLIENTS --> OVERSEERR
+    CLIENTS --> NFS
+
+    %% Media acquisition pipeline
+    OVERSEERR -->|"requests"| SONARR
+    OVERSEERR -->|"requests"| RADARR
+    PROWLARR -->|"indexers"| SONARR
+    PROWLARR -->|"indexers"| RADARR
+    FLARESOLVERR --> PROWLARR
+    SONARR --> DELUGE
+    RADARR --> DELUGE
+
+    %% Storage access
+    PLEX --> MEDIA
+    SONARR --> MEDIA
+    RADARR --> MEDIA
+    DELUGE --> DOWNLOADS
+    NFS --> STORAGE

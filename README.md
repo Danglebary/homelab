@@ -20,7 +20,7 @@ A NixOS-based homelab built on an HL15 2.0 server for media streaming and self-h
                               └─────────┬─────────┘
                                         │
 ┌───────────────────────────────────────┴───────────────────────────────────┐
-│                           Host (192.168.68.100)                           │
+│                                 Host                                      │
 │                                                                           │
 │  ┌─────────────────────────────┐    ┌──────────────────────────────────┐  │
 │  │      Host Services          │    │        VPN Namespace             │  │
@@ -33,9 +33,9 @@ A NixOS-based homelab built on an HL15 2.0 server for media streaming and self-h
 │  │                             │◄───┼───veth pair───┤                  │  │
 │  │                             │    │               │                  │  │
 │  │                             │    │  • Deluge (linux ISOs)           │  │
-│  │                             │    │  • Radarr (movies)               │  │
-│  │                             │    │  • Sonarr (TV shows)             │  │
-│  │                             │    │  • Prowlarr (indexers)           │  │
+│  │                             │    │  • Radarr                        │  │
+│  │                             │    │  • Sonarr                        │  │
+│  │                             │    │  • Prowlarr                      │  │
 │  │                             │    │  • FlareSolverr                  │  │
 │  └─────────────────────────────┘    └──────────────────────────────────┘  │
 │                                                                           │
@@ -44,7 +44,6 @@ A NixOS-based homelab built on an HL15 2.0 server for media streaming and self-h
                                         │
                               ┌─────────┴─────────┐
                               │   Home Network    │
-                              │  192.168.68.0/24  │
                               └───────────────────┘
 ```
 
@@ -77,10 +76,8 @@ Each service is a standalone module that can be enabled/disabled. Services defin
 Download services (Deluge, Radarr, Sonarr, Prowlarr) run in an isolated network namespace where all traffic is forced through a VPN tunnel. A kill-switch (blackhole route) prevents any traffic from leaking if the VPN drops.
 IPV6 is disabled in the namespace to also prevent leaks.
 
-The namespace connects to the host via a veth pair, allowing:
-- Web UIs to be accessed from the local network
-- Services to reach local storage (NFS, ZFS)
-- All outbound internet traffic to go through the VPN
+The namespace connects to the host via a veth pair, allowing web UIs of services within the namespace to be accessed from
+the host/LAN.
 
 ### Systemd Service Hardening
 
@@ -124,7 +121,7 @@ just sys-up-test  # NixOS system rebuild dry-run
 just sys-up       # Rebuild and switch to new NixOS config
 just sys-down     # Rollback to previous NixOS config
 just hp-up        # Update HomePage config
-just pull         # Fetch & pull latest changes from git
+just pull         # Fetch & Pull latest changes from git (git fetch && git pull)
 ```
 
 ## Documentation
