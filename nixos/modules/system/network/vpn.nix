@@ -20,14 +20,9 @@ let
   ];
 
   ip = "${pkgs.iproute2}/bin/ip";
-  mount = "${pkgs.util-linux}/bin/mount";
-  umount = "${pkgs.util-linux}/bin/umount";
   sysctl = "${pkgs.procps}/bin/sysctl";
 in
 {
-  # Load TUN/TAP kernel module for VPN support
-  boot.kernelModules = [ "tun" ];
-
   # Enable IP forwarding for routing between namespace and host
   boot.kernel.sysctl = {
     "net.ipv4.ip_forward" = 1;
@@ -52,6 +47,10 @@ in
 
           # Create persistent network namespace
           ${ip} netns add $NETNS_NAME
+
+          # Create /etc/netns/<name> directory for namespace-specific resolv.conf
+          mkdir -p /etc/netns/$NETNS_NAME
+          echo "nameserver 10.2.0.1" > /etc/netns/$NETNS_NAME/resolv.conf
 
           # Create veth pair (both ends start on host)
           ${ip} link add ${vethHost} type veth peer name ${vethNS}
@@ -92,35 +91,37 @@ in
           ${ip} link delete ${vethHost} 2>/dev/null || true
           # Delete namespace (this also cleans up the veth inside)
           ${ip} netns delete $NETNS_NAME 2>/dev/null || true
+          # Clean up namespace resolv.conf
+          rm -rf /etc/netns/$NETNS_NAME
         '';
       in "${script} %I";
     };
   };
 
-  # OpenVPN service running inside the VPN namespace
-  systemd.services.openvpn-pia = {
-    description = "OpenVPN connection to PIA (in network namespace)";
+  # WireGuard service running inside the VPN namespace (Proton VPN)
+  systemd.services.wg-proton = {
+    description = "WireGuard connection to Proton VPN (in network namespace)";
     after = [ "network-online.target" "netns@${namespaceName}.service" ];
     wants = [ "network-online.target" ];
     requires = [ "netns@${namespaceName}.service" ];
     bindsTo = [ "netns@${namespaceName}.service" ];
     wantedBy = [ "multi-user.target" ];
 
+    # wg-quick is a bash script that calls ip, wireguard tools, etc.
+    path = [ pkgs.iproute2 pkgs.wireguard-tools pkgs.bash ];
+
     serviceConfig = {
-      Type = "notify";
-      WorkingDirectory = "/etc/openvpn/pia";
+      Type = "oneshot";
+      RemainAfterExit = true;
 
       # Use the persistent network namespace created by ip netns add
       NetworkNamespacePath = "/var/run/netns/${namespaceName}";
 
-      # OpenVPN will create tun0 inside the namespace
-      ExecStart = "${pkgs.openvpn}/bin/openvpn --config /etc/openvpn/pia/pia.conf --auth-user-pass /etc/openvpn/pia/credentials.txt";
+      ExecStart = "${pkgs.wireguard-tools}/bin/wg-quick up /etc/wireguard/proton.conf";
+      ExecStop = "${pkgs.wireguard-tools}/bin/wg-quick down /etc/wireguard/proton.conf";
 
-      Restart = "always";
-      RestartSec = "10s";
-
-      # OpenVPN needs these capabilities for network setup
-      AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_NET_RAW" ];
+      # WireGuard needs CAP_NET_ADMIN for interface/route setup
+      AmbientCapabilities = [ "CAP_NET_ADMIN" ];
     };
   };
 
@@ -132,8 +133,8 @@ in
         chain postrouting {
           type nat hook postrouting priority srcnat; policy accept;
 
-          # Masquerade OpenVPN traffic (UDP 1198) so VPN servers can respond
-          ip saddr ${vethSubnet} udp dport 1198 masquerade
+          # Masquerade WireGuard traffic (UDP 51820) so VPN servers can respond
+          ip saddr ${vethSubnet} udp dport 51820 masquerade
 
           # Masquerade (NAT) traffic from VPN namespace going to LAN
           # This makes traffic from namespace appear to come from the host
@@ -148,9 +149,9 @@ in
           # Allow established/related connections (stateful firewall)
           ct state { established, related } accept
 
-          # Allow OpenVPN traffic (UDP port 1198) to reach VPN servers
+          # Allow WireGuard traffic (UDP port 51820) to reach VPN servers
           # This is needed to establish the tunnel through the host network
-          iifname "${vethHost}" udp dport 1198 accept
+          iifname "${vethHost}" udp dport 51820 accept
 
           # Allow forwarding FROM veth ONLY to RFC1918 (LAN) destinations
           # This blocks non-VPN internet traffic when VPN is down (kill-switch)
@@ -167,9 +168,9 @@ in
 # To configure a service to use this VPN namespace, use NetworkNamespacePath:
 #
 #   systemd.services.<service-name> = {
-#     after = [ "openvpn-pia.service" ];
-#     requires = [ "openvpn-pia.service" ];
-#     bindsTo = [ "openvpn-pia.service" ];
+#     after = [ "wg-proton.service" ];
+#     requires = [ "wg-proton.service" ];
+#     bindsTo = [ "wg-proton.service" ];
 #     serviceConfig = {
 #       NetworkNamespacePath = "/var/run/netns/vpn";
 #       # ... other service config ...
@@ -177,7 +178,7 @@ in
 #   };
 #
 # Services in the VPN namespace will:
-#   - Route all internet traffic through the VPN tunnel (tun0)
+#   - Route all internet traffic through the WireGuard tunnel (wg0)
 #   - Route LAN traffic (RFC1918) through the veth pair to access host network
 #   - Be accessible from the host/LAN via their service ports
 #   - Automatically stop if the VPN connection fails (bindsTo)

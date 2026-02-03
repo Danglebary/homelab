@@ -16,8 +16,8 @@
         description = "Radarr Movie Manager";
 
         # Ensure the service starts after VPN is up
-        after = [ "openvpn-pia.service" "prowlarr.service" ];
-        wants = [ "openvpn-pia.service" "prowlarr.service" ];
+        after = [ "wg-proton.service" "prowlarr.service" ];
+        wants = [ "wg-proton.service" "prowlarr.service" ];
         wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {

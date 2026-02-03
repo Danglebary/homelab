@@ -16,8 +16,8 @@
         description = "Deluge Bittorrent Client Daemon";
 
         # Ensure the service starts after VPN is up
-        after = [ "openvpn-pia.service" ];
-        wants = [ "openvpn-pia.service" ];
+        after = [ "wg-proton.service" ];
+        wants = [ "wg-proton.service" ];
         wantedBy = [ "multi-user.target" ];
 
         # Set PATH to include deluge and extraction utilities (needed for plugins)
@@ -73,9 +73,9 @@
 
         # Ensure the service starts after deluged and VPN is up
         # Using 'wants' for VPN, but 'requires' for deluge daemon (web UI needs daemon)
-        after = [ "deluge.service" "openvpn-pia.service" ];
+        after = [ "deluge.service" "wg-proton.service" ];
         requires = [ "deluge.service" ];
-        wants = [ "openvpn-pia.service" ];
+        wants = [ "wg-proton.service" ];
         wantedBy = [ "multi-user.target" ];
 
         # Set PATH to include deluge

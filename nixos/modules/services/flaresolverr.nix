@@ -5,8 +5,8 @@
         description = "FlareSolverr - Cloudflare Solver Proxy";
 
         # Ensure the service starts after VPN is up
-        after = [ "openvpn-pia.service" ];
-        wants = [ "openvpn-pia.service" ];
+        after = [ "wg-proton.service" ];
+        wants = [ "wg-proton.service" ];
         wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {
