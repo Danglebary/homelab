@@ -30,6 +30,7 @@
 
             # Run in VPN network namespace (all traffic forced through VPN)
             NetworkNamespacePath = "/var/run/netns/vpn";
+            BindReadOnlyPaths = [ "/etc/netns/vpn/resolv.conf:/etc/resolv.conf" ];
 
             # Network capabilities (not actually required - AF_NETLINK was the real fix)
             # AmbientCapabilities = [ "CAP_NET_ADMIN" ];
@@ -88,6 +89,7 @@
 
             # Run in VPN network namespace (all traffic forced through VPN)
             NetworkNamespacePath = "/var/run/netns/vpn";
+            BindReadOnlyPaths = [ "/etc/netns/vpn/resolv.conf:/etc/resolv.conf" ];
 
             # Paths that the service can read and write
             WorkingDirectory = "/var/lib/services/deluge";
