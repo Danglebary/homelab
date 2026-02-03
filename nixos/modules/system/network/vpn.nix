@@ -12,11 +12,10 @@ let
   nsIP = "10.200.200.2";
   vethSubnet = "10.200.200.0/30";
 
-  # RFC1918 private IP ranges for LAN routing
+  # LAN subnet for routing through veth (only the actual LAN, not all of RFC1918,
+  # to avoid conflicting with VPN-internal addresses like Proton's 10.2.0.1 DNS)
   privateLANRanges = [
-    "10.0.0.0/8"
-    "172.16.0.0/12"
-    "192.168.0.0/16"
+    "192.168.68.0/24"
   ];
 
   ip = "${pkgs.iproute2}/bin/ip";
@@ -138,7 +137,7 @@ in
 
           # Masquerade (NAT) traffic from VPN namespace going to LAN
           # This makes traffic from namespace appear to come from the host
-          ip saddr ${vethSubnet} ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } masquerade
+          ip saddr ${vethSubnet} ip daddr 192.168.68.0/24 masquerade
         }
       }
 
@@ -153,9 +152,9 @@ in
           # This is needed to establish the tunnel through the host network
           iifname "${vethHost}" udp dport 51820 accept
 
-          # Allow forwarding FROM veth ONLY to RFC1918 (LAN) destinations
+          # Allow forwarding FROM veth ONLY to LAN destinations
           # This blocks non-VPN internet traffic when VPN is down (kill-switch)
-          iifname "${vethHost}" ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } accept
+          iifname "${vethHost}" ip daddr 192.168.68.0/24 accept
 
           # Allow forwarding TO veth from anywhere (return traffic)
           oifname "${vethHost}" accept
